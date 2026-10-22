@@ -5,6 +5,8 @@ FinStream AI - API Route Handlers
 from backend.routes.accounts import router as accounts_router
 from backend.routes.health import router as health_router
 from backend.routes.risks import router as risks_router
+from backend.routes.statement import router as statement_router
+from backend.routes.stream import router as stream_router
 from backend.routes.transactions import router as transactions_router
 from backend.routes.websocket import router as websocket_router
 
@@ -14,4 +16,6 @@ __all__ = [
     "risks_router",
     "accounts_router",
     "websocket_router",
+    "statement_router",
+    "stream_router",
 ]

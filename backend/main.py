@@ -16,6 +16,8 @@ from backend.routes import (
     accounts_router,
     health_router,
     risks_router,
+    statement_router,
+    stream_router,
     transactions_router,
     websocket_router,
 )
@@ -71,8 +73,10 @@ def create_app() -> FastAPI:
     app.include_router(risks_router, prefix=api_v1_prefix)
     app.include_router(accounts_router, prefix=api_v1_prefix)
     app.include_router(websocket_router, prefix=api_v1_prefix)
+    app.include_router(statement_router, prefix=api_v1_prefix)
+    app.include_router(stream_router, prefix=api_v1_prefix)
 
-    # 4. Mount Static Assets & Serve Live Interactive Dashboard
+    # 4. Mount Static Assets & Serve Web Frontend Pages
     static_dir = Path(__file__).parent / "static"
     if static_dir.exists():
         app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
@@ -84,6 +88,30 @@ def create_app() -> FastAPI:
         if html_file.exists():
             return HTMLResponse(content=html_file.read_text(encoding="utf-8"))
         return HTMLResponse(content="<h1>FinStream AI Dashboard Loading...</h1>")
+
+    @app.get("/statement", response_class=HTMLResponse, include_in_schema=False)
+    def statement_page():
+        """Serves the Bank Statement Intelligence upload and analysis page."""
+        html_file = Path(__file__).parent / "static" / "statement.html"
+        if html_file.exists():
+            return HTMLResponse(content=html_file.read_text(encoding="utf-8"))
+        return HTMLResponse(content="<h1>FinStream AI Statement Page</h1>")
+
+    @app.get("/insights", response_class=HTMLResponse, include_in_schema=False)
+    def insights_page():
+        """Serves the Monthly Financial Insights page."""
+        html_file = Path(__file__).parent / "static" / "insights.html"
+        if html_file.exists():
+            return HTMLResponse(content=html_file.read_text(encoding="utf-8"))
+        return HTMLResponse(content="<h1>FinStream AI Insights Page</h1>")
+
+    @app.get("/transaction/{transaction_id}", response_class=HTMLResponse, include_in_schema=False)
+    def transaction_page(transaction_id: str):
+        """Serves the Transaction Profile & SHAP Deep Dive page."""
+        html_file = Path(__file__).parent / "static" / "transaction.html"
+        if html_file.exists():
+            return HTMLResponse(content=html_file.read_text(encoding="utf-8"))
+        return HTMLResponse(content="<h1>FinStream AI Transaction Profile</h1>")
 
     return app
 

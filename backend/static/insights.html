@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financial Transaction Insights — FinStream AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#6366f1', 600: '#4f46e5' },
+            risk: { low: '#10b981', medium: '#f59e0b', high: '#ef4444' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+
+  <!-- Top Navigation Bar -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40 px-4 lg:px-8 py-3.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <a href="/" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </a>
+        <div>
+          <div class="flex items-center space-x-2">
+            <a href="/" class="text-xl font-bold tracking-tight text-white hover:text-indigo-300 transition">FINSTREAM AI</a>
+            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Monthly Insights</span>
+          </div>
+          <p class="text-xs text-slate-400">Deep Financial Analytics & Anomaly Trend Breakdown</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex items-center space-x-1 text-xs">
+        <a href="/" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">⚡ Live Stream</a>
+        <a href="/statement" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">📄 Bank Statement</a>
+        <a href="/insights" class="px-3 py-1.5 rounded-lg font-bold bg-indigo-600 text-white shadow-sm">📊 Monthly Insights</a>
+        <a href="/docs" target="_blank" class="px-3 py-1.5 rounded-lg text-indigo-400 hover:bg-slate-800 transition border border-indigo-500/30">📖 API Docs</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 lg:px-8 py-6 space-y-6">
+
+    <!-- Empty State Banner if no statement loaded -->
+    <div id="no-statement-banner" class="hidden p-8 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-3">
+      <div class="w-12 h-12 mx-auto rounded-full bg-slate-800 flex items-center justify-center text-slate-400">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+      <h3 class="text-base font-bold text-white">No Bank Statement Analyzed Yet</h3>
+      <p class="text-xs text-slate-400 max-w-md mx-auto">Upload a 1-month statement or load the sample statement to unlock deep category analytics, monthly timeline heatmaps, and financial totals.</p>
+      <div class="pt-2">
+        <a href="/statement" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md transition">
+          Go to Bank Statement Upload
+        </a>
+      </div>
+    </div>
+
+    <div id="insights-content" class="hidden space-y-6">
+
+      <!-- Section Title & Statement Metadata -->
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-3">
+        <div>
+          <h2 class="text-lg font-bold text-white tracking-wide uppercase">Financial Transaction Insights</h2>
+          <p class="text-xs text-slate-400" id="statement-name-banner">Analyzed from: —</p>
+        </div>
+        <a href="/statement" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center space-x-1.5">
+          <span>Upload Another Statement</span>
+        </a>
+      </div>
+
+      <!-- 1. SPENDING OVERVIEW & RISK OVERVIEW DUAL CARDS -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        <!-- Spending Overview -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-3">
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Spending Overview</h3>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs pt-1">
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <span class="text-slate-400 block text-[11px]">Total Spending (Debit)</span>
+              <span id="spend-total-debit" class="text-lg font-bold text-rose-400 font-mono mt-0.5 block">₹0</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <span class="text-slate-400 block text-[11px]">Total Income (Credit)</span>
+              <span id="spend-total-credit" class="text-lg font-bold text-emerald-400 font-mono mt-0.5 block">₹0</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <span class="text-slate-400 block text-[11px]">Average Transaction</span>
+              <span id="spend-avg" class="text-lg font-bold text-white font-mono mt-0.5 block">₹0</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <span class="text-slate-400 block text-[11px]">Highest Transaction</span>
+              <span id="spend-highest" class="text-lg font-bold text-white font-mono mt-0.5 block">₹0</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <span class="text-slate-400 block text-[11px]">Lowest Transaction</span>
+              <span id="spend-lowest" class="text-lg font-bold text-white font-mono mt-0.5 block">₹0</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <span class="text-slate-400 block text-[11px]">Total Transactions</span>
+              <span id="spend-count" class="text-lg font-bold text-white font-mono mt-0.5 block">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Risk Overview -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-3">
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Risk Overview</h3>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1">
+            <div class="p-3 rounded-xl bg-rose-950/40 border border-rose-500/30">
+              <span class="text-rose-400 block text-[11px] font-semibold">High Anomaly</span>
+              <span id="risk-count-high" class="text-xl font-bold text-rose-400 font-mono mt-0.5 block">0</span>
+            </div>
+            <div class="p-3 rounded-xl bg-amber-950/40 border border-amber-500/30">
+              <span class="text-amber-400 block text-[11px] font-semibold">Medium Risk</span>
+              <span id="risk-count-med" class="text-xl font-bold text-amber-400 font-mono mt-0.5 block">0</span>
+            </div>
+            <div class="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30">
+              <span class="text-emerald-400 block text-[11px] font-semibold">Low Risk</span>
+              <span id="risk-count-low" class="text-xl font-bold text-emerald-400 font-mono mt-0.5 block">0</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+              <span class="text-slate-400 block text-[11px]">Mean Risk Score</span>
+              <span id="risk-avg-score" class="text-xl font-bold text-white font-mono mt-0.5 block">0.0000</span>
+            </div>
+          </div>
+          <!-- Highest Risk Banner -->
+          <div id="highest-risk-callout" class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs flex items-center justify-between">
+            <div>
+              <span class="text-slate-500 block text-[10px]">Highest Risk Event:</span>
+              <span id="callout-risk-desc" class="font-bold text-white font-sans">—</span>
+            </div>
+            <a id="callout-risk-link" href="#" class="px-2.5 py-1 rounded-lg bg-indigo-600/30 text-indigo-300 hover:bg-indigo-600/50 text-[11px] transition">
+              Investigate
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 2. MONTHLY TIMELINE CHART -->
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Monthly Activity & Spending Timeline</h3>
+            <p class="text-xs text-slate-400">Day-by-day transaction volume, spending spikes, and high-risk flags across the 30-day period</p>
+          </div>
+          <div class="flex items-center space-x-3 text-xs">
+            <div class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded-sm bg-indigo-500"></span><span>Daily Spend</span></div>
+            <div class="flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span><span>High Risk Flag</span></div>
+          </div>
+        </div>
+        <div class="h-64 relative">
+          <canvas id="timeline-chart"></canvas>
+        </div>
+      </div>
+
+      <!-- 3. CATEGORY ANALYSIS BREAKDOWN TABLE -->
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider">Category Spending & Risk Analysis</h3>
+            <p class="text-xs text-slate-400">Detailed breakdown of transaction frequency, monetary volume, and high-risk flags by merchant vertical</p>
+          </div>
+        </div>
+        <div class="overflow-x-auto rounded-xl border border-slate-800">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-950 text-slate-400 uppercase text-[10px] font-semibold border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-4">Merchant Category</th>
+                <th class="py-3 px-4 text-right">Transactions</th>
+                <th class="py-3 px-4 text-right">Total Amount (INR)</th>
+                <th class="py-3 px-4 text-right">% of Total Spending</th>
+                <th class="py-3 px-4 text-right">High-Risk Count</th>
+                <th class="py-3 px-4 text-right">Risk Posture</th>
+              </tr>
+            </thead>
+            <tbody id="category-table-body" class="divide-y divide-slate-800/60 font-mono"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    let timelineChart = null;
+
+    async function loadInsights() {
+      try {
+        const res = await fetch('/api/v1/statement/latest');
+        const data = await res.json();
+
+        if (!data || !data.transactions || data.transactions.length === 0) {
+          document.getElementById('no-statement-banner').classList.remove('hidden');
+          document.getElementById('insights-content').classList.add('hidden');
+          return;
+        }
+
+        document.getElementById('no-statement-banner').classList.add('hidden');
+        document.getElementById('insights-content').classList.remove('hidden');
+        renderInsights(data);
+      } catch (err) {
+        console.error('Insights load error:', err);
+      }
+    }
+
+    function renderInsights(data) {
+      const s = data.summary || {};
+      document.getElementById('statement-name-banner').textContent = `Statement: ${data.filename || 'Uploaded File'} (${data.audit?.date_range?.start || ''} to ${data.audit?.date_range?.end || ''})`;
+
+      // Spending Overview
+      document.getElementById('spend-total-debit').textContent = `₹${Number(s.total_debit || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+      document.getElementById('spend-total-credit').textContent = `₹${Number(s.total_credit || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+      document.getElementById('spend-avg').textContent = `₹${Number(s.average_transaction || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+      document.getElementById('spend-highest').textContent = `₹${Number(s.highest_transaction || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+      document.getElementById('spend-lowest').textContent = `₹${Number(s.lowest_transaction || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+      document.getElementById('spend-count').textContent = (s.total_transactions || 0).toLocaleString();
+
+      // Risk Overview
+      document.getElementById('risk-count-high').textContent = s.high_risk_count || 0;
+      document.getElementById('risk-count-med').textContent = s.medium_risk_count || 0;
+      document.getElementById('risk-count-low').textContent = s.low_risk_count || 0;
+      document.getElementById('risk-avg-score').textContent = Number(s.avg_risk_score || 0).toFixed(4);
+
+      // Highest Risk Callout
+      const topRisk = s.highest_risk_transaction;
+      if (topRisk) {
+        document.getElementById('callout-risk-desc').textContent = `${topRisk.transaction_id} — ₹${Number(topRisk.amount).toLocaleString()} (${topRisk.merchant_category}) • Risk: ${topRisk.hybrid_risk_score}`;
+        document.getElementById('callout-risk-link').href = `/transaction/${topRisk.transaction_id}`;
+      } else {
+        document.getElementById('highest-risk-callout').classList.add('hidden');
+      }
+
+      // Render Category Table
+      const catTable = document.getElementById('category-table-body');
+      const cats = data.category_breakdown || [];
+      const totalSpend = s.total_debit || 1;
+
+      catTable.innerHTML = cats.map(c => {
+        const pct = Math.round((c.amount / totalSpend) * 100);
+        const hasHigh = c.high_risk > 0;
+        return `
+          <tr class="hover:bg-slate-800/40 transition">
+            <td class="py-2.5 px-4 font-sans font-semibold text-white">${c.category}</td>
+            <td class="py-2.5 px-4 text-right">${c.transactions}</td>
+            <td class="py-2.5 px-4 text-right font-bold text-white">₹${Number(c.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+            <td class="py-2.5 px-4 text-right text-slate-400">${pct}%</td>
+            <td class="py-2.5 px-4 text-right ${hasHigh ? 'text-rose-400 font-bold' : 'text-slate-500'}">${c.high_risk}</td>
+            <td class="py-2.5 px-4 text-right font-sans">
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${hasHigh ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}">
+                ${hasHigh ? 'ELEVATED' : 'STABLE'}
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      // Render Timeline Chart
+      renderTimelineChart(data.daily_timeline || []);
+    }
+
+    function renderTimelineChart(timeline) {
+      const ctx = document.getElementById('timeline-chart').getContext('2d');
+      if (timelineChart) timelineChart.destroy();
+
+      timelineChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: timeline.map(d => d.date.slice(5)), // MM-DD
+          datasets: [
+            {
+              type: 'bar',
+              label: 'Daily Spending (₹)',
+              data: timeline.map(d => d.total_amount),
+              backgroundColor: timeline.map(d => d.high_risk_count > 0 ? 'rgba(239, 68, 68, 0.6)' : 'rgba(99, 102, 241, 0.4)'),
+              borderColor: timeline.map(d => d.high_risk_count > 0 ? '#ef4444' : '#6366f1'),
+              borderWidth: 1.5,
+              borderRadius: 4,
+              yAxisID: 'y',
+            },
+            {
+              type: 'line',
+              label: 'Avg Risk Score',
+              data: timeline.map(d => d.avg_risk_score),
+              borderColor: '#f59e0b',
+              backgroundColor: '#f59e0b',
+              pointRadius: 3,
+              tension: 0.3,
+              yAxisID: 'y1',
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              type: 'linear',
+              position: 'left',
+              grid: { color: '#1e293b' },
+              ticks: { color: '#94a3b8' }
+            },
+            y1: {
+              type: 'linear',
+              position: 'right',
+              min: 0,
+              max: 1,
+              grid: { display: false },
+              ticks: { color: '#f59e0b' }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#94a3b8', maxRotation: 45 }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#94a3b8', font: { size: 11 } }
+            }
+          }
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', loadInsights);
+  </script>
+</body>
+</html>

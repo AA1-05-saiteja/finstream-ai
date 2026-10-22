@@ -96,12 +96,20 @@
         </div>
       </div>
 
+      <!-- Navigation Links -->
+      <nav class="flex items-center space-x-1 text-xs">
+        <a href="/" class="px-3 py-1.5 rounded-lg font-bold bg-indigo-600 text-white shadow-sm">⚡ Live Stream</a>
+        <a href="/statement" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">📄 Bank Statement</a>
+        <a href="/insights" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">📊 Monthly Insights</a>
+        <a href="/docs" target="_blank" class="px-3 py-1.5 rounded-lg text-indigo-400 hover:bg-slate-800 transition border border-indigo-500/30">📖 API Docs</a>
+      </nav>
+
       <!-- Quick Actions -->
       <div class="flex items-center space-x-3">
-        <!-- Live Polling Toggle -->
-        <button id="poll-toggle-btn" onclick="toggleAutoPolling()" class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition">
-          <span id="poll-indicator" class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-          <span id="poll-text">Live: ON (3s)</span>
+        <!-- Live Stream Mode Toggle -->
+        <button id="poll-toggle-btn" onclick="toggleLiveMode()" class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-950/60 hover:bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 transition">
+          <span id="poll-indicator" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <span id="poll-text">● LIVE MODE</span>
         </button>
         <!-- Manual Refresh -->
         <button onclick="refreshDashboard()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition" title="Refresh Now">
@@ -109,11 +117,6 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
           </svg>
         </button>
-        <!-- Swagger Docs -->
-        <a href="/docs" target="_blank" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 transition flex items-center space-x-1.5">
-          <span>Swagger API</span>
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-        </a>
       </div>
     </div>
   </header>
@@ -122,6 +125,37 @@
   <!-- Main Dashboard Content                                                    -->
   <!-- ========================================================================= -->
   <main class="max-w-7xl mx-auto px-4 lg:px-8 py-6 space-y-6">
+
+    <!-- ========================================================================= -->
+    <!-- Live High-Risk Anomaly Alert Banner                                       -->
+    <!-- ========================================================================= -->
+    <div id="live-alert-banner" class="hidden rounded-2xl bg-rose-950/80 border-2 border-rose-500/80 p-4 shadow-xl shadow-rose-950/50 backdrop-blur transition-all duration-300">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-rose-600/30 border border-rose-500 flex items-center justify-center text-rose-400 animate-bounce">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="px-2 py-0.5 text-[10px] font-black rounded uppercase bg-rose-500 text-white tracking-wider">CRITICAL ALERT</span>
+              <h3 class="text-sm font-bold text-rose-200">⚠ HIGH-RISK TRANSACTION DETECTED</h3>
+            </div>
+            <p class="text-xs text-rose-300 font-mono mt-0.5" id="live-alert-details">
+              Tx ID: — | Amount: — | Risk Score: — | Time: —
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button id="live-alert-investigate-btn" onclick="investigateAlert()" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-lg transition flex items-center space-x-1.5">
+            <span>Investigate</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+          </button>
+          <button onclick="dismissAlert()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition" title="Dismiss Alert">
+            ✕ Dismiss
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- KPI Metric Cards Grid -->
     <section class="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -175,6 +209,86 @@
       </div>
     </section>
 
+    <!-- ========================================================================= -->
+    <!-- Contextual Intelligence: Historical Statement vs. Live Stream              -->
+    <!-- ========================================================================= -->
+    <section class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+          </div>
+          <div>
+            <h2 class="text-sm font-semibold text-white tracking-wide uppercase">Contextual Intelligence: Historical Statement vs. Live Stream</h2>
+            <p class="text-xs text-slate-400">Compare behavioral distributions between uploaded 30-day statement and real-time streaming transactions</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2 text-xs">
+          <span class="px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-mono text-[11px]" id="comp-status-badge">Statement: Not Uploaded</span>
+          <a href="/statement" class="text-indigo-400 hover:text-indigo-300 font-medium">Upload Statement →</a>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+        <!-- Historical Statement Card -->
+        <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">UPLOADED BANK STATEMENT</span>
+            <span class="text-[11px] text-slate-500 truncate max-w-[140px]" id="comp-hist-filename">—</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <div>
+              <div class="text-[11px] text-slate-400">Avg Transaction</div>
+              <div class="text-base font-bold text-white font-mono mt-0.5" id="comp-hist-amt">₹0.00</div>
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400">Avg Risk Score</div>
+              <div class="text-base font-bold text-slate-200 font-mono mt-0.5" id="comp-hist-risk">0.0000</div>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500">Total Analyzed: <span class="font-mono text-slate-300" id="comp-hist-count">0</span> transactions</div>
+        </div>
+
+        <!-- Live Stream Card -->
+        <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">LIVE TRANSACTION STREAM</span>
+            <span class="text-[11px] text-emerald-400 font-semibold" id="comp-stream-status">● Streaming Active</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <div>
+              <div class="text-[11px] text-slate-400">Live Avg Amount</div>
+              <div class="text-base font-bold text-emerald-400 font-mono mt-0.5" id="comp-stream-amt">₹0.00</div>
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400">Live Avg Risk</div>
+              <div class="text-base font-bold text-white font-mono mt-0.5" id="comp-stream-risk">0.0000</div>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500">Stream Buffer: <span class="font-mono text-slate-300" id="comp-stream-count">0</span> live events</div>
+        </div>
+
+        <!-- Variance & Anomaly Drift -->
+        <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">BEHAVIORAL DRIFT</span>
+            <span class="text-[11px] font-semibold text-slate-400" id="comp-drift-tier">Baseline Synchronized</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <div>
+              <div class="text-[11px] text-slate-400">Risk Score Drift</div>
+              <div class="text-base font-bold text-slate-200 font-mono mt-0.5" id="comp-drift-risk">0.0000</div>
+            </div>
+            <div>
+              <div class="text-[11px] text-slate-400">Amount Variance</div>
+              <div class="text-base font-bold text-slate-200 font-mono mt-0.5" id="comp-drift-amt">0.0%</div>
+            </div>
+          </div>
+          <div class="text-[11px] text-slate-500" id="comp-drift-msg">Awaiting statement upload for baseline alignment</div>
+        </div>
+      </div>
+    </section>
+
     <!-- Interactive Simulation & Intelligence Hub -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
@@ -187,10 +301,11 @@
         <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-2">
-              <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
               <h2 class="text-base font-semibold text-white tracking-wide uppercase">Simulate Transaction</h2>
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">SIMULATED TRANSACTIONS</span>
             </div>
-            <span class="text-xs text-slate-400">Real ML Pipeline Execution</span>
+            <span class="text-xs text-slate-400">Real ML Pipeline</span>
           </div>
           <p class="text-xs text-slate-400 leading-relaxed">
             Trigger real-time transaction events through the complete 23-feature extraction, dual ML inference (XGBoost + Isolation Forest), and SHAP attribution pipeline.
@@ -410,7 +525,10 @@
         <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-3">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h2 class="text-sm font-semibold text-white tracking-wide uppercase">Live Transaction Stream</h2>
+              <div class="flex items-center space-x-2">
+                <h2 class="text-sm font-semibold text-white tracking-wide uppercase">Live Transaction Stream</h2>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">LIVE TRANSACTION STREAM</span>
+              </div>
               <p class="text-xs text-slate-400">Real-time evaluated financial transactions with risk classifications</p>
             </div>
 
@@ -878,32 +996,193 @@
       alert('Transaction JSON payload copied to clipboard!');
     }
 
-    // Toggle Polling
-    function toggleAutoPolling() {
-      autoPolling = !autoPolling;
+    // Live Stream & Contextual Comparison State
+    let liveStreamingActive = true;
+    let liveStreamInterval = null;
+    let activeAlert = null;
+
+    // Toggle Live Stream Mode
+    function toggleLiveMode() {
+      liveStreamingActive = !liveStreamingActive;
       const text = document.getElementById('poll-text');
       const ind = document.getElementById('poll-indicator');
-      if (autoPolling) {
-        text.textContent = 'Live: ON (3s)';
-        ind.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-ping';
-        startPolling();
+      const streamStatus = document.getElementById('comp-stream-status');
+      
+      if (liveStreamingActive) {
+        if (text) text.textContent = '● LIVE MODE';
+        if (ind) ind.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping';
+        if (streamStatus) streamStatus.textContent = '● Streaming Active';
+        startLiveStreaming();
       } else {
-        text.textContent = 'Live: PAUSED';
-        ind.className = 'w-2 h-2 rounded-full bg-slate-500';
-        clearInterval(pollInterval);
+        if (text) text.textContent = '○ PAUSED';
+        if (ind) ind.className = 'w-2.5 h-2.5 rounded-full bg-slate-500';
+        if (streamStatus) streamStatus.textContent = '○ Streaming Paused';
+        stopLiveStreaming();
       }
     }
 
-    function startPolling() {
-      if (pollInterval) clearInterval(pollInterval);
-      pollInterval = setInterval(refreshDashboard, 3000);
+    // Alias for backwards compatibility
+    function toggleAutoPolling() {
+      toggleLiveMode();
+    }
+
+    function startLiveStreaming() {
+      if (liveStreamInterval) clearInterval(liveStreamInterval);
+      liveStreamInterval = setInterval(streamTick, 2500);
+    }
+
+    function stopLiveStreaming() {
+      if (liveStreamInterval) clearInterval(liveStreamInterval);
+      liveStreamInterval = null;
+    }
+
+    // Emit a live streaming transaction tick
+    async function streamTick() {
+      try {
+        const res = await fetch('/api/v1/stream/tick', { method: 'POST' });
+        if (!res.ok) return;
+        const data = await res.json();
+
+        // Check if High Risk Alert triggered
+        if (data.risk_level === 'HIGH') {
+          showLiveAlert({
+            transaction_id: data.transaction_id,
+            amount: data.amount,
+            risk_score: data.hybrid_risk_score,
+            timestamp: data.timestamp
+          });
+        }
+
+        // Refresh live dashboard metrics & cross-source comparison
+        await refreshDashboard();
+        await updateComparison();
+      } catch (err) {
+        console.warn('Stream tick error:', err);
+      }
+    }
+
+    // Update Contextual Comparison Card (Historical Statement vs. Live Stream)
+    async function updateComparison() {
+      try {
+        const res = await fetch('/api/v1/stream/comparison');
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const badge = document.getElementById('comp-status-badge');
+        const histFile = document.getElementById('comp-hist-filename');
+        const histAmt = document.getElementById('comp-hist-amt');
+        const histRisk = document.getElementById('comp-hist-risk');
+        const histCount = document.getElementById('comp-hist-count');
+
+        const streamAmt = document.getElementById('comp-stream-amt');
+        const streamRisk = document.getElementById('comp-stream-risk');
+        const streamCount = document.getElementById('comp-stream-count');
+
+        const driftTier = document.getElementById('comp-drift-tier');
+        const driftRisk = document.getElementById('comp-drift-risk');
+        const driftAmt = document.getElementById('comp-drift-amt');
+        const driftMsg = document.getElementById('comp-drift-msg');
+
+        if (data.statement_loaded) {
+          if (badge) {
+            badge.textContent = 'Statement: Loaded';
+            badge.className = 'px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono text-[11px]';
+          }
+          if (histFile) histFile.textContent = data.statement_filename || 'Uploaded Statement';
+          if (histAmt) histAmt.textContent = `₹${Number(data.historical_avg_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+          if (histRisk) histRisk.textContent = Number(data.historical_avg_risk || 0).toFixed(4);
+          if (histCount) histCount.textContent = (data.historical_total_tx || 0).toLocaleString();
+
+          const riskDiff = (data.stream_avg_risk || 0) - (data.historical_avg_risk || 0);
+          const amtDiffPct = data.historical_avg_amount > 0 
+            ? (((data.stream_avg_amount || 0) - data.historical_avg_amount) / data.historical_avg_amount * 100)
+            : 0;
+
+          if (driftRisk) {
+            driftRisk.textContent = `${riskDiff >= 0 ? '+' : ''}${riskDiff.toFixed(4)}`;
+            driftRisk.className = `text-base font-bold font-mono mt-0.5 ${riskDiff > 0.1 ? 'text-rose-400' : (riskDiff > 0.03 ? 'text-amber-400' : 'text-emerald-400')}`;
+          }
+          if (driftAmt) {
+            driftAmt.textContent = `${amtDiffPct >= 0 ? '+' : ''}${amtDiffPct.toFixed(1)}%`;
+          }
+          if (driftTier) {
+            if (Math.abs(riskDiff) > 0.15) {
+              driftTier.textContent = 'Elevated Risk Drift';
+              driftTier.className = 'text-[11px] font-semibold text-rose-400';
+            } else if (Math.abs(riskDiff) > 0.05) {
+              driftTier.textContent = 'Moderate Divergence';
+              driftTier.className = 'text-[11px] font-semibold text-amber-400';
+            } else {
+              driftTier.textContent = 'Baseline Synchronized';
+              driftTier.className = 'text-[11px] font-semibold text-emerald-400';
+            }
+          }
+          if (driftMsg) {
+            driftMsg.textContent = `Compared against ${data.historical_total_tx} statement transactions baseline`;
+          }
+        } else {
+          if (badge) {
+            badge.textContent = 'Statement: Not Uploaded';
+            badge.className = 'px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700 font-mono text-[11px]';
+          }
+          if (histFile) histFile.textContent = 'No Statement Uploaded';
+          if (histAmt) histAmt.textContent = '₹0.00';
+          if (histRisk) histRisk.textContent = '0.0000';
+          if (histCount) histCount.textContent = '0';
+          if (driftMsg) driftMsg.textContent = 'Awaiting statement upload for baseline alignment';
+        }
+
+        if (streamAmt) streamAmt.textContent = `₹${Number(data.stream_avg_amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+        if (streamRisk) streamRisk.textContent = Number(data.stream_avg_risk || 0).toFixed(4);
+        if (streamCount) streamCount.textContent = (data.stream_count || 0).toLocaleString();
+
+        // Check for active backend alert
+        if (data.latest_alert) {
+          showLiveAlert(data.latest_alert);
+        }
+      } catch (err) {
+        console.warn('Comparison poll error:', err);
+      }
+    }
+
+    // Display High Risk Live Alert Banner
+    function showLiveAlert(alertObj) {
+      activeAlert = alertObj;
+      const banner = document.getElementById('live-alert-banner');
+      const details = document.getElementById('live-alert-details');
+      if (banner && details) {
+        const formattedAmt = `₹${Number(alertObj.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+        const timeStr = alertObj.timestamp ? new Date(alertObj.timestamp).toLocaleTimeString() : 'Just now';
+        details.textContent = `Tx ID: ${alertObj.transaction_id}  |  Amount: ${formattedAmt}  |  Risk Score: ${Number(alertObj.risk_score || 0).toFixed(4)}  |  Timestamp: ${timeStr}`;
+        banner.classList.remove('hidden');
+      }
+    }
+
+    // Dismiss High Risk Live Alert Banner
+    async function dismissAlert() {
+      const banner = document.getElementById('live-alert-banner');
+      if (banner) banner.classList.add('hidden');
+      activeAlert = null;
+      try {
+        await fetch('/api/v1/stream/clear-alert', { method: 'POST' });
+      } catch (err) {
+        console.warn('Clear alert error:', err);
+      }
+    }
+
+    // Investigate Alert in deep-dive page
+    function investigateAlert() {
+      if (activeAlert && activeAlert.transaction_id) {
+        window.location.href = `/transaction/${activeAlert.transaction_id}`;
+      }
     }
 
     // Bootstrap
     window.addEventListener('DOMContentLoaded', () => {
       initCharts();
       refreshDashboard();
-      startPolling();
+      updateComparison();
+      startLiveStreaming();
     });
   </script>
 </body>

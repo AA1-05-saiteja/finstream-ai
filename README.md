@@ -3,8 +3,8 @@
 [![Python Version](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Architecture: Event-Driven](https://img.shields.io/badge/Architecture-Event--Driven-green.svg)]()
-[![Build & Test Status](https://img.shields.io/badge/tests-99%20passed%20%7C%200%20failed-brightgreen.svg)]()
-[![Platform Status](https://img.shields.io/badge/status-Phase%201--13%20Complete-success.svg)]()
+[![Build & Test Status](https://img.shields.io/badge/tests-108%20passed%20%7C%200%20failed-brightgreen.svg)]()
+[![Platform Status](https://img.shields.io/badge/status-Bank%20Statement%20%2B%20Live%20Stream%20Complete-success.svg)]()
 
 > **Academic Disclaimer**: This is an academic research and final-year Data Science major engineering project. All data, customer accounts, transaction IDs, and merchant records are 100% synthetically generated. The system is a real-time decision-support platform that scores and flags transactions for human analytical review; it does not connect to real financial institutions nor make irreversible automated financial settlements.
 
@@ -22,8 +22,10 @@
 - [9. Project Directory Structure](#9-project-directory-structure)
 - [10. Setup, Execution & Testing Guide](#10-setup-execution--testing-guide)
 - [11. Interactive Dashboard & Demonstration Scenarios](#11-interactive-dashboard--demonstration-scenarios)
-- [12. Project Completion Status & Roadmap](#12-project-completion-status--roadmap)
-- [13. License](#13-license)
+- [12. Bank Statement Intelligence & Analytics Engine](#12-bank-statement-intelligence--analytics-engine)
+- [13. Live Stream Extension & Anomaly Alert System](#13-live-stream-extension--anomaly-alert-system)
+- [14. Project Completion Status & Roadmap](#14-project-completion-status--roadmap)
+- [15. License](#15-license)
 
 ---
 
@@ -132,7 +134,8 @@ All **13 planned phases** have been completely implemented, verified with automa
 | **Phase 11**| React + TypeScript Dashboard | ✅ Complete | Responsive dashboard, real-time ticker, SHAP visualizer, account search | Integrated |
 | **Phase 12**| WebSocket Real-Time Delivery | ✅ Complete | Sub-millisecond event push, heartbeat keepalive, reconnection backoff | 3 tests |
 | **Phase 13**| Full E2E Integration & Benchmarking | ✅ Complete | 6-container Docker Compose, pipeline runner, throughput & latency metrics | 8 tests |
-| **Total** | **Full Platform Verification** | ✅ **COMPLETE** | **All 13 phases verified; 0 failures, 0 errors, 0 regressions** | **99 Passed** |
+| **Phase 14**| Bank Statement Intelligence & Live Stream Extension | ✅ Complete | Multi-format CSV/XLSX cleaning, 23-feature ML scoring, SHAP explainability, 3 web dashboards (`/statement`, `/insights`, `/transaction/{id}`), live alerts & contextual baseline comparison | 9 tests |
+| **Total** | **Full Platform Verification** | ✅ **COMPLETE** | **All 14 phases verified; 0 failures, 0 errors, 0 regressions** | **108 Passed** |
 
 ---
 
@@ -222,8 +225,12 @@ When running either locally or inside Docker Compose, the following ports and se
 
 | Port | Service / Application | URL / Endpoint | Purpose |
 |---|---|---|---|
-| **`8000`** | FastAPI Backend | [http://localhost:8000/docs](http://localhost:8000/docs) | Interactive Swagger UI for testing REST endpoints |
-| **`8000`** | ReDoc API Specs | [http://localhost:8000/redoc](http://localhost:8000/redoc) | Clean API documentation and schema explorer |
+| **`8000`** | Live Stream Web Dashboard | [http://localhost:8000/](http://localhost:8000/) | Live streaming transactions, risk charts, simulator & live high-risk alerts |
+| **`8000`** | Bank Statement Intelligence | [http://localhost:8000/statement](http://localhost:8000/statement) | 1-month statement upload (CSV/XLSX), cleaning audit & dual-ML risk scoring |
+| **`8000`** | Monthly Spending & Risk Insights | [http://localhost:8000/insights](http://localhost:8000/insights) | 30-day timeline charts, category breakdowns & risk posture analytics |
+| **`8000`** | Transaction Deep-Dive Inspector | [http://localhost:8000/transaction/{id}](http://localhost:8000/transaction/STMT1001) | Individual profile, 23 model features grid & SHAP waterfall attribution |
+| **`8000`** | FastAPI Interactive Swagger UI | [http://localhost:8000/docs](http://localhost:8000/docs) | OpenAPI interactive documentation and testing console |
+| **`8000`** | ReDoc API Specs | [http://localhost:8000/redoc](http://localhost:8000/redoc) | Schema definitions, contracts, and endpoint specifications |
 | **`8000`** | Health Heartbeat | [http://localhost:8000/api/v1/health](http://localhost:8000/api/v1/health) | API service operational status |
 | **`8000`** | Infrastructure Health | [http://localhost:8000/api/v1/health/dependencies](http://localhost:8000/api/v1/health/dependencies) | PostgreSQL and Redis connectivity diagnostics |
 | **`8000`** | WebSocket Stream | `ws://localhost:8000/api/v1/ws/transactions` | Real-time evaluated transaction event push |
@@ -284,21 +291,29 @@ finstream-ai/
 │   └── init_db.py                 # Schema creation & connectivity diagnostic CLI
 │
 ├── backend/                       # FastAPI Web Backend
-│   ├── main.py                    # Application factory, CORS, exception handlers
+│   ├── main.py                    # Application factory, CORS, static routes (/statement, /insights, /transaction/{id})
 │   ├── dependencies.py            # Modular dependency injection providers
 │   ├── services.py                # REST API business service layer
 │   ├── schemas.py                 # Public Pydantic API response and query contracts
 │   ├── exceptions.py              # Custom HTTP error handlers
 │   ├── websocket_manager.py       # WebSocket connection registry & heartbeats
 │   ├── event_service.py           # Non-blocking event broadcasting service
-│   └── routes/                    # API route handlers
-│       ├── health.py              # /api/v1/health & /dependencies
-│       ├── transactions.py        # /api/v1/transactions query & pagination
-│       ├── risks.py               # /api/v1/risks & SHAP explanations
-│       ├── accounts.py            # /api/v1/accounts risk profile & history
-│       └── websocket.py           # /api/v1/ws/transactions live socket
+│   ├── statement_analyzer.py      # Bank statement parsing, cleaning, 23-feature scoring & XLSX/CSV exports
+│   ├── routes/                    # API route handlers
+│   │   ├── health.py              # /api/v1/health & /dependencies
+│   │   ├── transactions.py        # /api/v1/transactions query, pagination & simulation
+│   │   ├── statement.py           # /api/v1/statement upload, sample, latest & exports
+│   │   ├── stream.py              # /api/v1/stream tick, live events, alerts & comparison
+│   │   ├── risks.py               # /api/v1/risks & SHAP explanations
+│   │   ├── accounts.py            # /api/v1/accounts risk profile & history
+│   │   └── websocket.py           # /api/v1/ws/transactions live socket
+│   └── static/                    # Zero-Install Embedded Frontend Dashboards
+│       ├── index.html             # Live stream monitor, transaction simulator & high-risk alerts
+│       ├── statement.html         # Bank statement upload, cleaning audit & 9 KPI dashboard
+│       ├── insights.html          # Monthly spending vs risk trends & category breakdown
+│       └── transaction.html       # Single transaction deep dive, 23 features & SHAP waterfall
 │
-├── dashboard/                     # React + TypeScript Frontend
+├── dashboard/                     # React + TypeScript Frontend (Optional Alternative UI)
 │   ├── Dockerfile                 # Multi-stage Vite build + Nginx Alpine runner
 │   ├── nginx.conf                 # Nginx reverse proxy routing
 │   ├── package.json               # Node.js dependencies
@@ -310,7 +325,7 @@ finstream-ai/
 │   │   ├── websocket/             # WebSocket hook with exponential reconnection
 │   │   └── components/            # UI widgets: LiveFeed, SHAPVisualizer, RiskCards
 │
-├── tests/                         # Complete Automated Test Suite (99 Tests)
+├── tests/                         # Complete Automated Test Suite (108 Tests)
 │   ├── test_config.py             # Configuration tests
 │   ├── test_transaction_generator.py # Generator schema & scenario tests
 │   ├── test_kafka_*.py            # Producer, consumer & integration tests
@@ -321,6 +336,7 @@ finstream-ai/
 │   ├── test_database_*.py         # PostgreSQL repository tests
 │   ├── test_redis_repository.py   # Redis caching tests
 │   ├── test_api_*.py              # FastAPI REST & WebSocket tests
+│   ├── test_statement_and_stream.py # Bank statement cleaning, ML scoring, live stream & alerts
 │   └── test_end_to_end_pipeline.py# Full pipeline integration tests
 │
 ├── reports/                       # Technical Validation Reports
@@ -347,7 +363,7 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 10.2 Run Full Test Suite (99 Tests)
+### 10.2 Run Full Test Suite (108 Tests)
 ```powershell
 pytest tests/ -v
 ```
@@ -367,10 +383,13 @@ python -m models.predict --rate 2 --duration 5 --scenario mixed
 uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
 ```
 Then open your web browser at:
-* **Interactive Live Dashboard**: **[http://localhost:8000/](http://localhost:8000/)** (Zero npm, zero Node.js, zero Docker required)
-* **Swagger API Documentation**: **[http://localhost:8000/docs](http://localhost:8000/docs)**
-* **ReDoc Interactive Reference**: **[http://localhost:8000/redoc](http://localhost:8000/redoc)**
-* **Platform Health Check**: **[http://localhost:8000/api/v1/health](http://localhost:8000/api/v1/health)**
+* **⚡ Live Stream Dashboard**: **[http://localhost:8000/](http://localhost:8000/)** (Live events, simulator, high-risk alert banner & cross-source drift)
+* **📄 Bank Statement Intelligence**: **[http://localhost:8000/statement](http://localhost:8000/statement)** (Upload 30-day statement CSV/XLSX, cleaning audit & dual-ML scoring)
+* **📊 Monthly Insights**: **[http://localhost:8000/insights](http://localhost:8000/insights)** (Spending vs risk breakdown & 30-day timeline)
+* **🔍 Transaction Deep-Dive**: **[http://localhost:8000/transaction/STMT1001](http://localhost:8000/transaction/STMT1001)** (All 23 features & SHAP attribution waterfall)
+* **📖 Swagger API Documentation**: **[http://localhost:8000/docs](http://localhost:8000/docs)**
+* **📚 ReDoc Interactive Reference**: **[http://localhost:8000/redoc](http://localhost:8000/redoc)**
+* **🩺 Platform Health Diagnostics**: **[http://localhost:8000/api/v1/health/dependencies](http://localhost:8000/api/v1/health/dependencies)**
 
 ---
 
@@ -406,20 +425,102 @@ From the **"Simulate Transaction"** control panel on the dashboard, you can trig
 
 ---
 
-## 12. Project Completion Status & Roadmap
+## 12. Bank Statement Intelligence & Analytics Engine
+
+The **Bank Statement Intelligence** extension (`/statement`, `/insights`, `/transaction/{id}`) allows uploading real or synthetic monthly bank statements, processing them 100% locally through the FastAPI application with zero cloud leakage, and evaluating every line item through the complete FinStream AI dual-ML pipeline.
+
+```mermaid
+flowchart LR
+    FILE["Uploaded Statement\n(.csv or .xlsx)"] --> DETECT["Column Detection\n(Regex Heuristics)"]
+    DETECT --> CLEAN["Data Cleaning & Audit\n(Currency, Dates, Duplicates)"]
+    CLEAN --> ENGINE["23-Feature Sliding Window\n+ Dual-ML Scoring"]
+    ENGINE --> KPIS["9 KPI Metric Cards\n+ Doughnut & Timeline"]
+    ENGINE --> TIERS["Risk Sections\n🔴 Highest | 🟡 Medium | 🟢 Lowest"]
+    ENGINE --> EXPORT["Export Reports\n(.csv / .xlsx with SHAP)"]
+```
+
+### 12.1 Capabilities & Architecture
+1. **Multi-Format Ingestion**: Supports `.csv` and `.xlsx` statement files up to 25 MB, parsed entirely in-memory with pandas and openpyxl.
+2. **One-Click 30-Day Sample Statement**: Includes an instant sample button (`/api/v1/statement/sample`) generating a realistic 30-day Indian banking statement (UPI, POS, Net Banking, salary credits, dining, groceries) with injected anomalies for immediate demonstration.
+3. **Flexible Column Detection Heuristics**: Automatically maps diverse bank column formats without rigid headers:
+   - **Date**: `Txn Date`, `Transaction Date`, `Value Date`, `Posting Date`
+   - **Reference / ID**: `Ref No`, `Transaction ID`, `UTR`, `Cheque No`
+   - **Description**: `Particulars`, `Narration`, `Description`, `Remarks`
+   - **Financial Direction**: Handles separate `Debit` / `Credit` columns or single signed `Amount` columns.
+   - **Balance**: `Closing Balance`, `Available Balance`, `Running Balance`
+4. **Data Quality Audit**: Displays an audit card disclosing original row count, valid transactions, dropped identical duplicates, and parsed date range.
+5. **Real Dual-Model Scoring (No Hardcoded Fakes)**:
+   - Every transaction is fed sequentially into `RealTimeFeatureEngine` to maintain sliding window state.
+   - Evaluated by **XGBoost Classifier** ($P_{\text{xgb}}$) and **Isolation Forest** ($S_{\text{if\_norm}}$).
+   - Generates true local **SHAP TreeExplainer** factor attributions and a natural-language summary.
+6. **9 Financial & Risk KPI Cards**:
+   - Total Transactions Analyzed
+   - Total Debits (Withdrawals)
+   - Total Credits (Deposits)
+   - Highest Transaction Amount (financial ranking)
+   - Lowest Transaction Amount (financial ranking)
+   - Average Transaction Amount (financial ranking)
+   - Low-Risk Normal Count (risk ranking)
+   - Medium-Risk Warning Count (risk ranking)
+   - High-Risk Critical Anomaly Count (risk ranking)
+7. **Strict Separation of Financial Amount vs. Risk Score**:
+   - *Financial Ranking*: Highest Transaction Amount ($₹$) vs. Lowest Transaction Amount ($₹$).
+   - *Risk Ranking*: 🔴 Highest Risk Transactions (Scores near $1.0$) vs. 🟡 Medium Risk vs. 🟢 Lowest Risk.
+8. **Monthly Spending & Risk Insights (`/insights`)**:
+   - Spending vs Risk comparative overview cards.
+   - 30-Day dual-axis spending and risk trend chart.
+   - Category breakdown table displaying transactions, expenditure, high-risk count, and risk posture.
+9. **Transaction Deep Dive Inspector (`/transaction/{id}`)**:
+   - Dual-model score gauge and decision boundary indicator.
+   - Complete grid inspecting all 23 engineered features.
+   - Horizontal SHAP waterfall bar chart with plain-English explanation.
+   - Raw evaluated JSON payload viewer with one-click clipboard copying.
+10. **Report Export Facilities**: Export the complete risk-analyzed statement to downloadable `.csv` or `.xlsx` format with top-3 SHAP attributions included.
+
+---
+
+## 13. Live Stream Extension & Anomaly Alert System
+
+FinStream AI seamlessly distinguishes between three distinct data sources across the interface:
+- **`UPLOADED BANK STATEMENT`**: Historical monthly baseline.
+- **`SIMULATED TRANSACTIONS`**: On-demand scenario generation from the demonstration control panel.
+- **`LIVE TRANSACTION STREAM`**: Real-time streaming transaction feed driven by the live engine.
+
+### 13.1 Live Stream Controller & Alert Banner
+1. **Live Mode Toggle**:
+   - Header control button toggles between `● LIVE MODE` (active green pinging dot) and `○ PAUSED`.
+   - In active mode, transactions are generated and evaluated every 2.5 seconds, updating charts, metrics, and tables in real time.
+2. **Prominent High-Risk Anomaly Alert Banner**:
+   - When any transaction exceeds the critical anomaly threshold ($S_{\text{risk}} \ge 0.70$), a high-contrast banner triggers immediately:
+     $$\text{⚠ HIGH-RISK TRANSACTION DETECTED: [Tx ID | Amount | Risk Score | Timestamp]}$$
+   - Includes an **"Investigate"** button navigating directly to `/transaction/{id}` for deep feature and SHAP inspection, along with a **"Dismiss"** control.
+3. **Contextual Intelligence: Historical Baseline vs. Live Stream**:
+   - Compares the uploaded 30-day statement baseline against real-time streaming transactions.
+   - Displays:
+     - Historical Average Amount & Average Risk Score
+     - Live Stream Average Amount & Average Risk Score
+     - Behavioral Risk Score Drift ($\Delta \text{Risk}$) and Amount Variance ($\Delta \text{Amount}\%$)
+     - Behavioral status indicator (`Baseline Synchronized`, `Moderate Divergence`, or `Elevated Risk Drift`).
+
+---
+
+## 14. Project Completion Status & Roadmap
 
 | Architectural Component | Milestone | Status | Details |
 | :--- | :--- | :--- | :--- |
-| **Phases 1–13 Core Engine** | Pipeline & Streaming | **COMPLETED** | 99/99 automated tests passing |
+| **Phases 1–13 Core Engine** | Pipeline & Streaming | **COMPLETED** | 99/99 automated baseline tests passing |
+| **Phase 14 Extension** | Bank Statement & Stream | **COMPLETED** | 9/9 new tests passing (108/108 total tests) |
 | **Dual ML Inference** | XGBoost + Isolation Forest | **COMPLETED** | ROC-AUC: 0.9676, Artifacts in `models/artifacts/` |
 | **Model Explainability** | SHAP TreeExplainer | **COMPLETED** | Top-5 directional local feature attributions |
-| **Interactive Live Dashboard** | Zero-Install Web UI | **COMPLETED** | Served directly at `http://localhost:8000/` |
+| **Live Web Dashboards** | Zero-Install Web UI | **COMPLETED** | 4 responsive pages (`/`, `/statement`, `/insights`, `/transaction/{id}`) |
 | **Transaction Simulator** | 4 Demo Scenarios + Custom | **COMPLETED** | Real ML pipeline execution |
-| **GitHub Preparation** | Git & `.gitignore` | **COMPLETED** | Clean ignore rules, ML artifacts tracked |
+| **Bank Statement Analyzer** | CSV & XLSX Local Engine | **COMPLETED** | Heuristic column mapping, cleaning audit, XLSX/CSV export |
+| **Live Stream Alerts** | Real-Time Anomaly Engine | **COMPLETED** | Dynamic alert banner, investigate action, contextual comparison |
+| **GitHub Preparation** | Git & `.gitignore` | **COMPLETED** | Clean ignore rules, ML artifacts tracked, 0 untracked leftovers |
 | **Continuous Integration** | GitHub Actions CI | **COMPLETED** | Automated Python 3.12 test runner (`ci.yml`) |
 
 ---
 
-## 13. License
+## 15. License
 
 This project is licensed under the [MIT License](LICENSE) — free for academic, educational, and commercial evaluation.

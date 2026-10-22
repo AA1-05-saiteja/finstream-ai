@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transaction Intelligence Profile — FinStream AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#6366f1', 600: '#4f46e5' },
+            risk: { low: '#10b981', medium: '#f59e0b', high: '#ef4444' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+
+  <!-- Top Navigation Bar -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40 px-4 lg:px-8 py-3.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center space-x-3">
+        <a href="/" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </a>
+        <div>
+          <div class="flex items-center space-x-2">
+            <a href="/" class="text-xl font-bold tracking-tight text-white hover:text-indigo-300 transition">FINSTREAM AI</a>
+            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Transaction Profile</span>
+          </div>
+          <p class="text-xs text-slate-400">Deep-Dive Anomaly Investigation & Local SHAP Attribution</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex items-center space-x-1 text-xs">
+        <a href="/" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">⚡ Live Stream</a>
+        <a href="/statement" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">📄 Bank Statement</a>
+        <a href="/insights" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition">📊 Monthly Insights</a>
+        <a href="/docs" target="_blank" class="px-3 py-1.5 rounded-lg text-indigo-400 hover:bg-slate-800 transition border border-indigo-500/30">📖 API Docs</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-7xl mx-auto px-4 lg:px-8 py-6 space-y-6">
+
+    <!-- Back button & Header -->
+    <div class="flex items-center justify-between">
+      <button onclick="history.back()" class="flex items-center space-x-1 text-xs text-slate-400 hover:text-white transition">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        <span>Back to Previous Page</span>
+      </button>
+      <div id="tx-header-badge" class="px-3 py-1 text-xs font-bold rounded-full font-mono">LOADING...</div>
+    </div>
+
+    <!-- 1. Transaction & Risk Overview Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Left Column: Transaction Metadata Profile (6 cols) -->
+      <div class="lg:col-span-6 p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+            <h2 class="text-sm font-bold text-white uppercase tracking-wider">Transaction Profile</h2>
+          </div>
+          <span class="font-mono text-xs text-indigo-400 font-bold" id="tx-id-display">—</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 text-xs font-mono">
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <span class="text-slate-500 block text-[10px] font-sans">Transaction Amount:</span>
+            <span id="tx-amount" class="text-xl font-bold text-emerald-400">₹0.00</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <span class="text-slate-500 block text-[10px] font-sans">Flow Direction:</span>
+            <span id="tx-direction" class="text-xl font-bold text-white">DEBIT</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <span class="text-slate-500 block text-[10px] font-sans">Timestamp (UTC):</span>
+            <span id="tx-timestamp" class="text-xs text-slate-300">—</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <span class="text-slate-500 block text-[10px] font-sans">Account ID:</span>
+            <span id="tx-account" class="text-xs text-slate-300">—</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <span class="text-slate-500 block text-[10px] font-sans">Merchant / Payee:</span>
+            <span id="tx-merchant" class="text-xs text-slate-300 font-sans truncate block">—</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <span class="text-slate-500 block text-[10px] font-sans">Category Vertical:</span>
+            <span id="tx-category" class="text-xs text-slate-300 font-sans">—</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <span class="text-slate-500 block text-[10px] font-sans">Payment Channel:</span>
+            <span id="tx-channel" class="text-xs text-slate-300">—</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <span class="text-slate-500 block text-[10px] font-sans">City Location:</span>
+            <span id="tx-city" class="text-xs text-slate-300 font-sans">—</span>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-1">
+          <span class="text-slate-500 block text-[10px] font-sans">Full Narration / Description:</span>
+          <p id="tx-description" class="text-slate-200 font-sans font-medium">—</p>
+        </div>
+      </div>
+
+      <!-- Right Column: Dual-ML Risk Profile (6 cols) -->
+      <div class="lg:col-span-6 p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-4">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div class="flex items-center space-x-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+            <h2 class="text-sm font-bold text-white uppercase tracking-wider">Dual-Model Risk Profile</h2>
+          </div>
+          <span id="risk-tier-badge" class="px-2.5 py-0.5 text-xs font-bold rounded-full font-mono">EVALUATING</span>
+        </div>
+
+        <!-- Hybrid Score Gauge -->
+        <div class="space-y-1.5 p-3 rounded-xl bg-slate-950 border border-slate-800">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-semibold text-slate-300">Composite Hybrid Risk Score:</span>
+            <span id="hybrid-score-num" class="font-mono text-xl font-bold text-white">0.0000</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+            <div id="hybrid-score-bar" class="h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+          <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+            <span>0.00 (Low)</span>
+            <span>0.40 (Threshold)</span>
+            <span>0.70 (Alert)</span>
+            <span>1.00 (Critical)</span>
+          </div>
+        </div>
+
+        <!-- Supervised vs Unsupervised Model Scores -->
+        <div class="grid grid-cols-2 gap-3 text-center">
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <span class="text-slate-400 block text-[11px]">XGBoost Anomaly Prob</span>
+            <span id="xgb-prob" class="text-xl font-bold text-indigo-400 font-mono mt-1 block">0.0000</span>
+            <span class="text-[10px] text-slate-500">Supervised (60% weight)</span>
+          </div>
+          <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
+            <span class="text-slate-400 block text-[11px]">Isolation Forest Score</span>
+            <span id="iforest-score" class="text-xl font-bold text-cyan-400 font-mono mt-1 block">0.0000</span>
+            <span class="text-[10px] text-slate-500">Unsupervised (40% weight)</span>
+          </div>
+        </div>
+
+        <!-- Natural Language Model Explanation -->
+        <div class="p-3.5 rounded-xl bg-indigo-950/20 border border-indigo-500/20 text-xs space-y-1.5">
+          <span class="font-bold text-indigo-300 block text-[11px] uppercase tracking-wider">Natural Language Reason:</span>
+          <p id="nl-explanation-text" class="text-slate-300 leading-relaxed font-sans">
+            Analyzing transaction signals against baseline...
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 2. SHAP Explainability: "Why Was This Transaction Flagged?" -->
+    <section class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-white tracking-wide uppercase">Why Was This Transaction Flagged?</h2>
+          <p class="text-xs text-slate-400">SHAP TreeExplainer feature attributions showing directional influence on anomaly scoring</p>
+        </div>
+        <span class="text-xs text-slate-500 font-mono">Top 5 SHAP Drivers</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <!-- Visual Bar Chart (7 cols) -->
+        <div class="lg:col-span-7 h-56 relative">
+          <canvas id="shap-horizontal-chart"></canvas>
+        </div>
+
+        <!-- Factor Breakdown List (5 cols) -->
+        <div class="lg:col-span-5 space-y-2" id="shap-factors-list">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. Feature Profile: All 23 Model Features -->
+    <section class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-3">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div>
+          <h3 class="text-sm font-bold text-white uppercase tracking-wider">Feature Profile (23 Engineered Signals)</h3>
+          <p class="text-xs text-slate-400">Sliding event-time behavioral, velocity, and cardinality features fed directly into XGBoost and Isolation Forest</p>
+        </div>
+        <span class="text-xs font-mono text-indigo-400 font-semibold">23 Features Active</span>
+      </div>
+
+      <div id="features-23-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 text-xs font-mono">
+        <!-- Dynamically rendered -->
+      </div>
+    </section>
+
+    <!-- 4. Raw JSON Payload -->
+    <section class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-3">
+      <div class="flex items-center justify-between">
+        <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Raw Evaluated JSON Payload</h4>
+        <button onclick="copyJson()" class="px-2.5 py-1 text-xs rounded bg-slate-800 hover:bg-slate-700 text-indigo-400 transition">Copy JSON</button>
+      </div>
+      <pre id="raw-json-viewer" class="p-4 rounded-xl bg-slate-950 text-slate-300 font-mono text-[11px] overflow-x-auto max-h-60"></pre>
+    </section>
+
+  </main>
+
+  <script>
+    let shapChart = null;
+    let rawPayload = null;
+
+    async function loadTransaction() {
+      // Extract txId from pathname: /transaction/{txId}
+      const parts = window.location.pathname.split('/');
+      const txId = parts[parts.length - 1];
+
+      if (!txId) {
+        alert('No transaction ID specified.');
+        return;
+      }
+
+      document.getElementById('tx-id-display').textContent = txId;
+
+      try {
+        // First try Statement endpoint
+        let res = await fetch(`/api/v1/statement/transaction/${txId}`);
+        let data = null;
+
+        if (res.ok) {
+          data = await res.json();
+        } else {
+          // Fallback to database endpoint /api/v1/transactions/{id}
+          res = await fetch(`/api/v1/transactions/${txId}`);
+          if (res.ok) {
+            const raw = await res.json();
+            data = {
+              ...(raw.transaction || {}),
+              hybrid_risk_score: raw.risk?.hybrid_risk_score || 0,
+              risk_level: raw.risk?.risk_level || 'LOW',
+              xgboost_probability: raw.risk?.xgboost_probability || 0,
+              isolation_forest_normalized: raw.risk?.isolation_forest_normalized || 0,
+              top_shap_features: (raw.explanations || []).map(e => ({
+                feature: e.feature,
+                shap_value: e.shap_value,
+                feature_value: e.feature_value,
+                direction: e.direction,
+              })),
+            };
+          }
+        }
+
+        if (!data) {
+          alert(`Transaction ${txId} not found.`);
+          return;
+        }
+
+        rawPayload = data;
+        renderTransactionDetails(data);
+      } catch (err) {
+        console.error('Failed to load transaction profile:', err);
+      }
+    }
+
+    function renderTransactionDetails(data) {
+      const risk = (data.risk_level || 'LOW').toUpperCase();
+      const score = Number(data.hybrid_risk_score || 0);
+
+      // Header Badges
+      const headerBadge = document.getElementById('tx-header-badge');
+      const tierBadge = document.getElementById('risk-tier-badge');
+      const badgeText = `${risk} RISK (${score.toFixed(4)})`;
+
+      headerBadge.textContent = badgeText;
+      tierBadge.textContent = `${risk} RISK`;
+
+      let badgeClasses = 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+      if (risk === 'HIGH') badgeClasses = 'bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse';
+      else if (risk === 'MEDIUM') badgeClasses = 'bg-amber-500/20 text-amber-400 border border-amber-500/30';
+
+      headerBadge.className = `px-3 py-1 text-xs font-bold rounded-full font-mono ${badgeClasses}`;
+      tierBadge.className = `px-2.5 py-0.5 text-xs font-bold rounded-full font-mono ${badgeClasses}`;
+
+      // Metadata
+      document.getElementById('tx-amount').textContent = `₹${Number(data.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+      document.getElementById('tx-direction').textContent = data.direction || (data.transaction_type === 'DEPOSIT' ? 'CREDIT' : 'DEBIT');
+      document.getElementById('tx-timestamp').textContent = (data.timestamp || '').replace('T', ' ').replace('Z', '');
+      document.getElementById('tx-account').textContent = data.account_id || 'ACC0001';
+      document.getElementById('tx-merchant').textContent = data.merchant_id || data.description || 'Merchant';
+      document.getElementById('tx-category').textContent = data.merchant_category || 'GENERAL';
+      document.getElementById('tx-channel').textContent = data.channel || 'UPI';
+      document.getElementById('tx-city').textContent = data.city || 'Mumbai';
+      document.getElementById('tx-description').textContent = data.description || 'Financial Transaction Record';
+
+      // Score Gauge
+      document.getElementById('hybrid-score-num').textContent = score.toFixed(4);
+      const scorePct = Math.min(Math.round(score * 100), 100);
+      const scoreBar = document.getElementById('hybrid-score-bar');
+      scoreBar.style.width = `${scorePct}%`;
+      if (score >= 0.7) scoreBar.className = 'bg-rose-500 h-2.5 rounded-full transition-all duration-500';
+      else if (score >= 0.4) scoreBar.className = 'bg-amber-500 h-2.5 rounded-full transition-all duration-500';
+      else scoreBar.className = 'bg-emerald-500 h-2.5 rounded-full transition-all duration-500';
+
+      document.getElementById('xgb-prob').textContent = Number(data.xgboost_probability || 0).toFixed(4);
+      document.getElementById('iforest-score').textContent = Number(data.isolation_forest_normalized || 0).toFixed(4);
+
+      // Natural language explanation
+      let nlExplanation = `This transaction evaluated with a hybrid risk score of ${score.toFixed(4)} and is classified as ${risk}. `;
+      const shapList = data.top_shap_features || [];
+      if (shapList.length > 0) {
+        const top = shapList[0];
+        if (top.feature.includes('amount')) {
+          nlExplanation += `The transaction amount of ₹${Number(data.amount).toLocaleString()} was a dominant factor significantly increasing predicted anomaly risk. `;
+        } else if (top.feature.includes('velocity') || top.feature.includes('count')) {
+          nlExplanation += `High transaction velocity and burst frequency over recent sliding windows was the primary signal driving the anomaly alert. `;
+        } else {
+          nlExplanation += `Feature '${top.feature}' contributed the strongest local attribution (+${top.shap_value.toFixed(4)}) toward this classification. `;
+        }
+      }
+      document.getElementById('nl-explanation-text').textContent = nlExplanation;
+
+      // Render SHAP
+      renderShap(shapList);
+
+      // Render 23 Features
+      renderFeatures(data.features || {});
+
+      // Raw JSON
+      document.getElementById('raw-json-viewer').textContent = JSON.stringify(data, null, 2);
+    }
+
+    function renderShap(shapList) {
+      const container = document.getElementById('shap-factors-list');
+      if (!shapList || shapList.length === 0) {
+        container.innerHTML = '<div class="text-slate-500 italic py-3 text-xs">No local SHAP attributions generated.</div>';
+        return;
+      }
+
+      container.innerHTML = shapList.map(item => {
+        const val = Number(item.shap_value || 0);
+        const isPos = val >= 0;
+        return `
+          <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs flex items-center justify-between">
+            <div>
+              <span class="font-mono text-slate-200 font-bold block">${item.feature}</span>
+              <span class="text-[10px] text-slate-500 font-mono">Observed: ${item.feature_value !== undefined ? Number(item.feature_value).toFixed(2) : '—'}</span>
+            </div>
+            <div class="text-right">
+              <span class="font-mono font-bold ${isPos ? 'text-rose-400' : 'text-emerald-400'}">
+                ${isPos ? '+' : ''}${val.toFixed(4)}
+              </span>
+              <span class="text-[9px] block text-slate-500">${isPos ? 'Increases Anomaly' : 'Decreases Anomaly'}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Horizontal Bar Chart
+      const ctx = document.getElementById('shap-horizontal-chart').getContext('2d');
+      if (shapChart) shapChart.destroy();
+
+      shapChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: shapList.map(s => s.feature),
+          datasets: [{
+            label: 'SHAP Value (Impact on Log-Odds)',
+            data: shapList.map(s => s.shap_value),
+            backgroundColor: shapList.map(s => s.shap_value >= 0 ? '#ef4444' : '#10b981'),
+            borderRadius: 4,
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              grid: { color: '#1e293b' },
+              ticks: { color: '#94a3b8' }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: '#e2e8f0', font: { family: 'monospace', size: 10 } }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    function renderFeatures(feats) {
+      const container = document.getElementById('features-23-grid');
+      const keys = Object.keys(feats);
+      if (keys.length === 0) {
+        container.innerHTML = '<div class="text-slate-500 italic col-span-4 text-center py-4">No features dictionary provided.</div>';
+        return;
+      }
+
+      container.innerHTML = keys.map(k => {
+        const val = typeof feats[k] === 'number' ? feats[k].toFixed(2) : String(feats[k]);
+        return `
+          <div class="p-2 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
+            <span class="text-slate-400 truncate max-w-[120px]" title="${k}">${k}:</span>
+            <span class="text-indigo-300 font-bold">${val}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function copyJson() {
+      if (rawPayload) {
+        navigator.clipboard.writeText(JSON.stringify(rawPayload, null, 2));
+        alert('Transaction JSON copied to clipboard!');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadTransaction);
+  </script>
+</body>
+</html>
