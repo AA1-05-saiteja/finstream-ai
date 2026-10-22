@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinStream AI — Real-Time Transaction Intelligence & Anomaly Platform</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              900: '#1e1b4b',
+            },
+            risk: {
+              low: '#10b981',
+              medium: '#f59e0b',
+              high: '#ef4444',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes pulse-subtle {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .animate-pulse-subtle {
+      animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-indigo-500 selection:text-white">
+
+  <!-- ========================================================================= -->
+  <!-- Top Navigation Header                                                     -->
+  <!-- ========================================================================= -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40 px-4 lg:px-8 py-3.5">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <!-- Brand & Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">FINSTREAM AI</h1>
+            <span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">v1.0.0</span>
+          </div>
+          <p class="text-xs text-slate-400">Real-Time Financial Transaction Intelligence & Anomaly Platform</p>
+        </div>
+      </div>
+
+      <!-- Live Engine Badges -->
+      <div class="hidden sm:flex items-center space-x-3 text-xs">
+        <div class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-medium">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse-subtle"></span>
+          <span>Dual ML: XGBoost + iForest</span>
+        </div>
+        <div class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-medium">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          <span>SHAP Explainability</span>
+        </div>
+        <div id="db-status-pill" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 font-medium">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span>Storage: Active</span>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="flex items-center space-x-3">
+        <!-- Live Polling Toggle -->
+        <button id="poll-toggle-btn" onclick="toggleAutoPolling()" class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition">
+          <span id="poll-indicator" class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span id="poll-text">Live: ON (3s)</span>
+        </button>
+        <!-- Manual Refresh -->
+        <button onclick="refreshDashboard()" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white transition" title="Refresh Now">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+          </svg>
+        </button>
+        <!-- Swagger Docs -->
+        <a href="/docs" target="_blank" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 transition flex items-center space-x-1.5">
+          <span>Swagger API</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================================================= -->
+  <!-- Main Dashboard Content                                                    -->
+  <!-- ========================================================================= -->
+  <main class="max-w-7xl mx-auto px-4 lg:px-8 py-6 space-y-6">
+
+    <!-- KPI Metric Cards Grid -->
+    <section class="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <!-- Total Transactions -->
+      <div class="col-span-2 md:col-span-1 p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm relative overflow-hidden">
+        <div class="text-xs font-medium text-slate-400">Total Analyzed</div>
+        <div class="text-2xl font-bold text-white mt-1" id="kpi-total">0</div>
+        <div class="text-[11px] text-slate-500 mt-0.5">End-to-end streamed</div>
+        <div class="absolute right-3 top-3 w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        </div>
+      </div>
+
+      <!-- Low Risk -->
+      <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm relative overflow-hidden">
+        <div class="text-xs font-medium text-emerald-400">Low Risk (Normal)</div>
+        <div class="text-2xl font-bold text-emerald-400 mt-1" id="kpi-low">0</div>
+        <div class="text-[11px] text-slate-500 mt-0.5" id="kpi-low-pct">0% of total</div>
+        <div class="absolute right-3 top-3 w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        </div>
+      </div>
+
+      <!-- Medium Risk -->
+      <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm relative overflow-hidden">
+        <div class="text-xs font-medium text-amber-400">Medium Risk</div>
+        <div class="text-2xl font-bold text-amber-400 mt-1" id="kpi-medium">0</div>
+        <div class="text-[11px] text-slate-500 mt-0.5" id="kpi-medium-pct">0% of total</div>
+        <div class="absolute right-3 top-3 w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center text-amber-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+      </div>
+
+      <!-- High Risk -->
+      <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm relative overflow-hidden">
+        <div class="text-xs font-medium text-rose-400">High Anomaly</div>
+        <div class="text-2xl font-bold text-rose-400 mt-1" id="kpi-high">0</div>
+        <div class="text-[11px] text-slate-500 mt-0.5" id="kpi-high-pct">0% of total</div>
+        <div class="absolute right-3 top-3 w-8 h-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+      </div>
+
+      <!-- Average Risk Score -->
+      <div class="col-span-2 md:col-span-1 p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm relative overflow-hidden">
+        <div class="text-xs font-medium text-slate-400">Avg Risk Score</div>
+        <div class="text-2xl font-bold text-white mt-1" id="kpi-avg">0.0000</div>
+        <div class="w-full bg-slate-800 rounded-full h-1.5 mt-2 overflow-hidden">
+          <div id="kpi-avg-bar" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Interactive Simulation & Intelligence Hub -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- ================================================================= -->
+      <!-- Left Column: Simulation Controls & Real-Time ML Result (5 cols)   -->
+      <!-- ================================================================= -->
+      <div class="lg:col-span-5 space-y-6">
+
+        <!-- SIMULATE TRANSACTION Card -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+              <h2 class="text-base font-semibold text-white tracking-wide uppercase">Simulate Transaction</h2>
+            </div>
+            <span class="text-xs text-slate-400">Real ML Pipeline Execution</span>
+          </div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Trigger real-time transaction events through the complete 23-feature extraction, dual ML inference (XGBoost + Isolation Forest), and SHAP attribution pipeline.
+          </p>
+
+          <!-- 4 Scenario Demo Buttons Grid -->
+          <div class="grid grid-cols-2 gap-2.5">
+            <!-- Scenario 1: Normal -->
+            <button onclick="simulate('normal')" class="sim-btn group text-left p-3 rounded-xl bg-slate-800/80 hover:bg-emerald-950/40 border border-slate-700/80 hover:border-emerald-500/50 transition">
+              <div class="flex items-center space-x-2">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                <span class="text-xs font-bold text-emerald-400">Normal</span>
+              </div>
+              <div class="text-[11px] text-slate-400 mt-1">Expected: LOW Risk</div>
+            </button>
+
+            <!-- Scenario 2: High Amount -->
+            <button onclick="simulate('high_amount')" class="sim-btn group text-left p-3 rounded-xl bg-slate-800/80 hover:bg-rose-950/40 border border-slate-700/80 hover:border-rose-500/50 transition">
+              <div class="flex items-center space-x-2">
+                <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                <span class="text-xs font-bold text-rose-400">High Amount</span>
+              </div>
+              <div class="text-[11px] text-slate-400 mt-1">Extreme value outlier</div>
+            </button>
+
+            <!-- Scenario 3: Velocity Spike -->
+            <button onclick="simulate('velocity_spike')" class="sim-btn group text-left p-3 rounded-xl bg-slate-800/80 hover:bg-amber-950/40 border border-slate-700/80 hover:border-amber-500/50 transition">
+              <div class="flex items-center space-x-2">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                <span class="text-xs font-bold text-amber-400">Velocity Spike</span>
+              </div>
+              <div class="text-[11px] text-slate-400 mt-1">Burst transaction frequency</div>
+            </button>
+
+            <!-- Scenario 4: High-Risk Prediction -->
+            <button onclick="simulate('high_risk')" class="sim-btn group text-left p-3 rounded-xl bg-slate-800/80 hover:bg-indigo-950/40 border border-slate-700/80 hover:border-indigo-500/50 transition">
+              <div class="flex items-center space-x-2">
+                <span class="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></span>
+                <span class="text-xs font-bold text-indigo-300">HIGH-Risk</span>
+              </div>
+              <div class="text-[11px] text-slate-400 mt-1">Dual-Model Alert</div>
+            </button>
+          </div>
+
+          <!-- Custom Transaction Form Accordion -->
+          <details class="group rounded-xl bg-slate-800/50 border border-slate-800 p-3 transition">
+            <summary class="flex items-center justify-between cursor-pointer text-xs font-semibold text-slate-300 hover:text-white select-none">
+              <span class="flex items-center space-x-1.5">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                <span>Custom Transaction Parameters</span>
+              </span>
+              <span class="text-slate-500 group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <form onsubmit="handleCustomSimulate(event)" class="mt-3 space-y-3 text-xs">
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-slate-400 mb-1">Amount (INR)</label>
+                  <input type="number" id="custom-amount" step="0.01" value="2500" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                  <label class="block text-slate-400 mb-1">Account ID</label>
+                  <input type="text" id="custom-account" value="ACC0042" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-indigo-500">
+                </div>
+              </div>
+              <div class="grid grid-cols-3 gap-2">
+                <div>
+                  <label class="block text-slate-400 mb-1">Category</label>
+                  <select id="custom-cat" class="w-full px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-indigo-500">
+                    <option value="GROCERY">GROCERY</option>
+                    <option value="LUXURY">LUXURY</option>
+                    <option value="ELECTRONICS">ELECTRONICS</option>
+                    <option value="DINING">DINING</option>
+                    <option value="TRAVEL">TRAVEL</option>
+                    <option value="ENTERTAINMENT">ENTERTAINMENT</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-slate-400 mb-1">City</label>
+                  <select id="custom-city" class="w-full px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-indigo-500">
+                    <option value="Mumbai">Mumbai</option>
+                    <option value="Delhi">Delhi</option>
+                    <option value="Bengaluru">Bengaluru</option>
+                    <option value="Hyderabad">Hyderabad</option>
+                    <option value="Chennai">Chennai</option>
+                    <option value="Kolkata">Kolkata</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-slate-400 mb-1">Channel</label>
+                  <select id="custom-channel" class="w-full px-2 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-indigo-500">
+                    <option value="UPI">UPI</option>
+                    <option value="POS">POS</option>
+                    <option value="ONLINE">ONLINE</option>
+                    <option value="ATM">ATM</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="w-full py-2 font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition shadow-sm">
+                Evaluate Custom Transaction
+              </button>
+            </form>
+          </details>
+        </div>
+
+        <!-- LATEST ML EVALUATION RESULT Card -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-4" id="latest-result-card">
+          <div class="flex items-center justify-between">
+            <h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Latest Model Evaluation</h3>
+            <span id="result-status-badge" class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-slate-800 text-slate-400 border border-slate-700">Awaiting Input</span>
+          </div>
+
+          <!-- Transaction Summary Banner -->
+          <div class="p-3.5 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400">Transaction ID:</span>
+              <span class="font-mono font-semibold text-white" id="res-tx-id">—</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400">Amount & Channel:</span>
+              <span class="font-semibold text-white" id="res-amount">—</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-400">Account & City:</span>
+              <span class="text-slate-300" id="res-account">—</span>
+            </div>
+          </div>
+
+          <!-- Hybrid Risk Score Gauge -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-semibold text-slate-300">Hybrid Risk Score:</span>
+              <span class="font-mono text-base font-bold text-white" id="res-score">0.0000</span>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+              <div id="res-score-bar" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+              <span>0.00 (Low)</span>
+              <span>0.40 (Threshold)</span>
+              <span>0.70 (Alert)</span>
+              <span>1.00 (Max)</span>
+            </div>
+          </div>
+
+          <!-- Dual Model Score Breakdown -->
+          <div class="grid grid-cols-2 gap-3 pt-1">
+            <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-center">
+              <div class="text-[11px] text-slate-400">XGBoost Prob</div>
+              <div class="text-lg font-bold text-indigo-400 mt-0.5" id="res-xgb">0.0000</div>
+              <div class="text-[10px] text-slate-500">Supervised (60%)</div>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-center">
+              <div class="text-[11px] text-slate-400">Isolation Forest</div>
+              <div class="text-lg font-bold text-cyan-400 mt-0.5" id="res-iforest">0.0000</div>
+              <div class="text-[10px] text-slate-500">Unsupervised (40%)</div>
+            </div>
+          </div>
+
+          <!-- SHAP Feature Explanations Section -->
+          <div class="space-y-2 pt-2 border-t border-slate-800">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-semibold text-slate-300">SHAP Local Feature Attribution</h4>
+              <span class="text-[10px] text-slate-500">Top 5 Drivers</span>
+            </div>
+            <div id="shap-bars-container" class="space-y-2 text-xs">
+              <div class="text-slate-500 text-center py-3 text-xs italic">
+                Simulate a transaction above to view SHAP attribution factors.
+              </div>
+            </div>
+          </div>
+
+          <!-- 23 Model Features Collapsible Accordion -->
+          <details class="group rounded-xl bg-slate-950 border border-slate-800 p-3">
+            <summary class="flex items-center justify-between cursor-pointer text-xs font-semibold text-slate-300 hover:text-white select-none">
+              <span>Inspect All 23 Model Features</span>
+              <span class="text-slate-500 group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <div id="features-grid-container" class="mt-3 grid grid-cols-2 gap-2 text-[11px] max-h-56 overflow-y-auto">
+              <div class="text-slate-500 italic col-span-2 text-center py-2">No transaction evaluated yet.</div>
+            </div>
+          </details>
+        </div>
+
+      </div>
+
+      <!-- ================================================================= -->
+      <!-- Right Column: Live Monitor Table & Visual Charts (7 cols)         -->
+      <!-- ================================================================= -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- Analytics Visualizations Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Risk Distribution Chart -->
+          <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-2">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Risk Tier Breakdown</h3>
+              <span class="text-[10px] text-slate-500">Distribution</span>
+            </div>
+            <div class="h-44 relative flex items-center justify-center">
+              <canvas id="risk-doughnut-chart"></canvas>
+            </div>
+          </div>
+
+          <!-- Risk Score Timeline Chart -->
+          <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-2">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Risk Score Stream</h3>
+              <span class="text-[10px] text-slate-500">Last 15 Events</span>
+            </div>
+            <div class="h-44 relative">
+              <canvas id="risk-trend-chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Transactions Monitor Table -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 class="text-sm font-semibold text-white tracking-wide uppercase">Live Transaction Stream</h2>
+              <p class="text-xs text-slate-400">Real-time evaluated financial transactions with risk classifications</p>
+            </div>
+
+            <!-- Risk Filter Tabs -->
+            <div class="flex items-center space-x-1 p-1 bg-slate-950 rounded-lg border border-slate-800 text-xs">
+              <button onclick="setRiskFilter('ALL')" id="filter-all" class="px-2.5 py-1 rounded-md font-semibold text-indigo-400 bg-slate-800 transition">ALL</button>
+              <button onclick="setRiskFilter('LOW')" id="filter-low" class="px-2.5 py-1 rounded-md font-medium text-slate-400 hover:text-emerald-400 transition">LOW</button>
+              <button onclick="setRiskFilter('MEDIUM')" id="filter-med" class="px-2.5 py-1 rounded-md font-medium text-slate-400 hover:text-amber-400 transition">MEDIUM</button>
+              <button onclick="setRiskFilter('HIGH')" id="filter-high" class="px-2.5 py-1 rounded-md font-medium text-slate-400 hover:text-rose-400 transition">HIGH</button>
+            </div>
+          </div>
+
+          <!-- Table Container -->
+          <div class="overflow-x-auto rounded-xl border border-slate-800">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-slate-950 text-slate-400 uppercase font-semibold text-[10px] border-b border-slate-800">
+                <tr>
+                  <th class="py-3 px-3">Tx ID</th>
+                  <th class="py-3 px-3">Account</th>
+                  <th class="py-3 px-3">Amount</th>
+                  <th class="py-3 px-3">Category</th>
+                  <th class="py-3 px-3">Risk Score</th>
+                  <th class="py-3 px-3">Tier</th>
+                  <th class="py-3 px-3">Timestamp</th>
+                  <th class="py-3 px-3 text-right">Details</th>
+                </tr>
+              </thead>
+              <tbody id="transaction-table-body" class="divide-y divide-slate-800/60 font-mono">
+                <tr>
+                  <td colspan="8" class="text-center py-6 text-slate-500 font-sans italic">
+                    Loading live transaction stream...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- Transaction Details & SHAP Modal                                          -->
+  <!-- ========================================================================= -->
+  <div id="tx-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center space-x-2">
+          <h3 class="text-base font-bold text-white">Transaction Intelligence Details</h3>
+          <span id="modal-risk-badge" class="px-2.5 py-0.5 text-xs font-bold rounded-full"></span>
+        </div>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800">✕</button>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs" id="modal-meta-grid">
+        <!-- Metadata dynamically populated -->
+      </div>
+
+      <!-- Modal SHAP Breakdown -->
+      <div class="space-y-2 border-t border-slate-800 pt-3">
+        <h4 class="text-xs font-semibold text-slate-300">SHAP Feature Explanations & Factor Attributions</h4>
+        <div id="modal-shap-container" class="space-y-2 text-xs"></div>
+      </div>
+
+      <!-- Raw JSON Payload -->
+      <div class="border-t border-slate-800 pt-3 space-y-2">
+        <div class="flex items-center justify-between">
+          <h4 class="text-xs font-semibold text-slate-400">Raw Evaluated Payload</h4>
+          <button onclick="copyModalJson()" class="text-xs text-indigo-400 hover:text-indigo-300 font-medium">Copy JSON</button>
+        </div>
+        <pre id="modal-raw-json" class="p-3 rounded-xl bg-slate-950 text-slate-300 text-[11px] font-mono overflow-x-auto max-h-48"></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- JavaScript Application Logic                                              -->
+  <!-- ========================================================================= -->
+  <script>
+    // State management
+    let autoPolling = true;
+    let pollInterval = null;
+    let currentFilter = 'ALL';
+    let recentTransactionsData = [];
+    let doughnutChart = null;
+    let trendChart = null;
+
+    // Initialize Charts on Load
+    function initCharts() {
+      // Risk Distribution Doughnut
+      const ctxDoughnut = document.getElementById('risk-doughnut-chart').getContext('2d');
+      doughnutChart = new Chart(ctxDoughnut, {
+        type: 'doughnut',
+        data: {
+          labels: ['Low', 'Medium', 'High'],
+          datasets: [{
+            data: [1, 0, 0],
+            backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+            borderColor: '#0f172a',
+            borderWidth: 2,
+            hoverOffset: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#94a3b8', font: { size: 11 } }
+            }
+          },
+          cutout: '65%'
+        }
+      });
+
+      // Risk Trend Line Chart
+      const ctxTrend = document.getElementById('risk-trend-chart').getContext('2d');
+      trendChart = new Chart(ctxTrend, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Risk Score',
+            data: [],
+            borderColor: '#6366f1',
+            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+            fill: true,
+            tension: 0.35,
+            pointRadius: 3,
+            pointHoverRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              min: 0,
+              max: 1,
+              grid: { color: '#1e293b' },
+              ticks: { color: '#94a3b8', font: { size: 10 } }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { display: false }
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    // Refresh Dashboard Function
+    async function refreshDashboard() {
+      try {
+        const response = await fetch('/api/v1/transactions/stats/summary');
+        if (!response.ok) return;
+        const data = await response.json();
+
+        // Update KPI Counters
+        document.getElementById('kpi-total').textContent = (data.total_transactions || 0).toLocaleString();
+        document.getElementById('kpi-low').textContent = (data.low_risk_count || 0).toLocaleString();
+        document.getElementById('kpi-medium').textContent = (data.medium_risk_count || 0).toLocaleString();
+        document.getElementById('kpi-high').textContent = (data.high_risk_count || 0).toLocaleString();
+        document.getElementById('kpi-avg').textContent = Number(data.avg_risk_score || 0).toFixed(4);
+
+        const total = data.total_transactions || 1;
+        document.getElementById('kpi-low-pct').textContent = `${Math.round(((data.low_risk_count || 0) / total) * 100)}% of total`;
+        document.getElementById('kpi-medium-pct').textContent = `${Math.round(((data.medium_risk_count || 0) / total) * 100)}% of total`;
+        document.getElementById('kpi-high-pct').textContent = `${Math.round(((data.high_risk_count || 0) / total) * 100)}% of total`;
+
+        const avgPct = Math.min(Math.round((data.avg_risk_score || 0) * 100), 100);
+        document.getElementById('kpi-avg-bar').style.width = `${avgPct}%`;
+        if (data.avg_risk_score >= 0.7) {
+          document.getElementById('kpi-avg-bar').className = 'bg-rose-500 h-1.5 rounded-full transition-all duration-500';
+        } else if (data.avg_risk_score >= 0.4) {
+          document.getElementById('kpi-avg-bar').className = 'bg-amber-500 h-1.5 rounded-full transition-all duration-500';
+        } else {
+          document.getElementById('kpi-avg-bar').className = 'bg-emerald-500 h-1.5 rounded-full transition-all duration-500';
+        }
+
+        // Update Charts
+        if (doughnutChart) {
+          doughnutChart.data.datasets[0].data = [
+            data.low_risk_count || 0,
+            data.medium_risk_count || 0,
+            data.high_risk_count || 0,
+          ];
+          doughnutChart.update();
+        }
+
+        // Update Table
+        recentTransactionsData = data.recent_transactions || [];
+        renderTable();
+
+        // Update Trend Chart with recent scores in chronological order
+        if (trendChart && recentTransactionsData.length > 0) {
+          const chronological = [...recentTransactionsData].reverse().slice(-15);
+          trendChart.data.labels = chronological.map(t => t.transaction_id || '');
+          trendChart.data.datasets[0].data = chronological.map(t => t.hybrid_risk_score || 0);
+          trendChart.update();
+        }
+
+      } catch (err) {
+        console.warn('Dashboard poll error:', err);
+      }
+    }
+
+    // Render Table with Filter
+    function renderTable() {
+      const tbody = document.getElementById('transaction-table-body');
+      let items = recentTransactionsData;
+
+      if (currentFilter !== 'ALL') {
+        items = items.filter(t => (t.risk_level || '').toUpperCase() === currentFilter);
+      }
+
+      if (!items || items.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="text-center py-6 text-slate-500 font-sans italic">
+              No transactions match filter '${currentFilter}'. Use "Simulate Transaction" to generate events!
+            </td>
+          </tr>`;
+        return;
+      }
+
+      tbody.innerHTML = items.map(tx => {
+        const risk = (tx.risk_level || 'LOW').toUpperCase();
+        let badgeClass = 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
+        if (risk === 'HIGH') badgeClass = 'bg-rose-500/10 text-rose-400 border border-rose-500/20 animate-pulse-subtle';
+        else if (risk === 'MEDIUM') badgeClass = 'bg-amber-500/10 text-amber-400 border border-amber-500/20';
+
+        const amountFormatted = `₹${Number(tx.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+        const tsFormatted = tx.timestamp ? new Date(tx.timestamp).toLocaleTimeString() : '—';
+
+        return `
+          <tr class="hover:bg-slate-800/40 transition">
+            <td class="py-2.5 px-3 font-semibold text-indigo-300">${tx.transaction_id}</td>
+            <td class="py-2.5 px-3 text-slate-300 font-sans">${tx.account_id}</td>
+            <td class="py-2.5 px-3 font-semibold text-white">${amountFormatted}</td>
+            <td class="py-2.5 px-3 text-slate-400 font-sans">${tx.merchant_category || '—'}</td>
+            <td class="py-2.5 px-3 font-bold ${risk === 'HIGH' ? 'text-rose-400' : (risk === 'MEDIUM' ? 'text-amber-400' : 'text-emerald-400')}">
+              ${Number(tx.hybrid_risk_score || 0).toFixed(4)}
+            </td>
+            <td class="py-2.5 px-3 font-sans">
+              <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${badgeClass}">${risk}</span>
+            </td>
+            <td class="py-2.5 px-3 text-slate-500 font-sans text-[11px]">${tsFormatted}</td>
+            <td class="py-2.5 px-3 text-right font-sans">
+              <button onclick="openModal('${tx.transaction_id}')" class="px-2 py-1 text-[11px] rounded bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white transition">
+                View
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Set Filter
+    function setRiskFilter(tier) {
+      currentFilter = tier;
+      ['all', 'low', 'med', 'high'].forEach(t => {
+        const btn = document.getElementById(`filter-${t}`);
+        if (btn) {
+          btn.className = 'px-2.5 py-1 rounded-md font-medium text-slate-400 hover:text-white transition';
+        }
+      });
+      const map = { 'ALL': 'all', 'LOW': 'low', 'MEDIUM': 'med', 'HIGH': 'high' };
+      const activeBtn = document.getElementById(`filter-${map[tier]}`);
+      if (activeBtn) {
+        activeBtn.className = 'px-2.5 py-1 rounded-md font-semibold text-indigo-400 bg-slate-800 transition';
+      }
+      renderTable();
+    }
+
+    // Trigger Simulation Request
+    async function simulate(scenario) {
+      try {
+        const btn = event?.currentTarget;
+        if (btn) btn.classList.add('opacity-50', 'pointer-events-none');
+
+        const res = await fetch('/api/v1/transactions/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scenario: scenario })
+        });
+        const data = await res.json();
+        if (btn) btn.classList.remove('opacity-50', 'pointer-events-none');
+
+        displayLatestResult(data);
+        await refreshDashboard();
+      } catch (err) {
+        console.error('Simulation failed:', err);
+      }
+    }
+
+    // Custom Simulation Handler
+    async function handleCustomSimulate(e) {
+      e.preventDefault();
+      const payload = {
+        scenario: 'custom',
+        amount: parseFloat(document.getElementById('custom-amount').value),
+        account_id: document.getElementById('custom-account').value,
+        merchant_category: document.getElementById('custom-cat').value,
+        city: document.getElementById('custom-city').value,
+        channel: document.getElementById('custom-channel').value,
+      };
+
+      try {
+        const res = await fetch('/api/v1/transactions/simulate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        displayLatestResult(data);
+        await refreshDashboard();
+      } catch (err) {
+        console.error('Custom simulation failed:', err);
+      }
+    }
+
+    // Display Latest Evaluation Result in Left Panel
+    function displayLatestResult(data) {
+      const risk = (data.risk_level || 'LOW').toUpperCase();
+      const badge = document.getElementById('result-status-badge');
+      badge.textContent = `${risk} RISK`;
+      if (risk === 'HIGH') {
+        badge.className = 'px-2.5 py-0.5 text-xs font-bold rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse-subtle';
+      } else if (risk === 'MEDIUM') {
+        badge.className = 'px-2.5 py-0.5 text-xs font-bold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30';
+      } else {
+        badge.className = 'px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+      }
+
+      document.getElementById('res-tx-id').textContent = data.transaction_id || '—';
+      const formattedAmt = `₹${Number(data.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+      document.getElementById('res-amount').textContent = `${formattedAmt} (${data.channel || 'UPI'})`;
+      document.getElementById('res-account').textContent = `${data.account_id || 'ACC'} • ${data.city || 'City'}`;
+
+      const score = Number(data.hybrid_risk_score || 0);
+      document.getElementById('res-score').textContent = score.toFixed(4);
+      const scorePct = Math.min(Math.round(score * 100), 100);
+      const scoreBar = document.getElementById('res-score-bar');
+      scoreBar.style.width = `${scorePct}%`;
+      if (score >= 0.7) {
+        scoreBar.className = 'bg-rose-500 h-2.5 rounded-full transition-all duration-500';
+      } else if (score >= 0.4) {
+        scoreBar.className = 'bg-amber-500 h-2.5 rounded-full transition-all duration-500';
+      } else {
+        scoreBar.className = 'bg-emerald-500 h-2.5 rounded-full transition-all duration-500';
+      }
+
+      document.getElementById('res-xgb').textContent = Number(data.xgboost_probability || 0).toFixed(4);
+      document.getElementById('res-iforest').textContent = Number(data.isolation_forest_normalized || 0).toFixed(4);
+
+      // Render SHAP Bars
+      const shapContainer = document.getElementById('shap-bars-container');
+      const shapList = data.top_shap_features || [];
+      if (shapList.length === 0) {
+        shapContainer.innerHTML = '<div class="text-slate-500 italic text-center py-2">No SHAP attributions generated.</div>';
+      } else {
+        shapContainer.innerHTML = shapList.map(item => {
+          const val = Number(item.shap_value || 0);
+          const isPositive = val >= 0;
+          const barColor = isPositive ? 'bg-rose-500' : 'bg-emerald-500';
+          const textColor = isPositive ? 'text-rose-400' : 'text-emerald-400';
+          const mag = Math.min(Math.round(Math.abs(val) * 100 * 2), 100);
+
+          return `
+            <div class="space-y-1">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="font-medium text-slate-300 font-mono">${item.feature}</span>
+                <span class="${textColor} font-mono font-bold">${isPositive ? '+' : ''}${val.toFixed(4)}</span>
+              </div>
+              <div class="w-full bg-slate-950 rounded-full h-1.5 overflow-hidden flex">
+                <div class="${barColor} h-1.5 rounded-full transition-all duration-500" style="width: ${mag}%"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Render 23 Engineered Features Grid
+      const featContainer = document.getElementById('features-grid-container');
+      const feats = data.features || {};
+      const featKeys = Object.keys(feats);
+      if (featKeys.length === 0) {
+        featContainer.innerHTML = '<div class="text-slate-500 italic col-span-2 text-center py-2">No features computed.</div>';
+      } else {
+        featContainer.innerHTML = featKeys.map(k => {
+          const val = typeof feats[k] === 'number' ? feats[k].toFixed(2) : String(feats[k]);
+          return `
+            <div class="p-2 rounded-lg bg-slate-900 border border-slate-800/80 flex items-center justify-between">
+              <span class="text-slate-400 truncate max-w-[130px]" title="${k}">${k}:</span>
+              <span class="font-mono text-white font-medium">${val}</span>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    // Transaction Details Modal Handling
+    async function openModal(txId) {
+      const modal = document.getElementById('tx-modal');
+      modal.classList.remove('hidden');
+
+      try {
+        const res = await fetch(`/api/v1/transactions/${txId}`);
+        const data = await res.json();
+        const tx = data.transaction || {};
+        const risk = data.risk || {};
+        const shap = data.explanations || [];
+
+        const riskTier = (risk.risk_level || 'LOW').toUpperCase();
+        const badge = document.getElementById('modal-risk-badge');
+        badge.textContent = `${riskTier} RISK (${Number(risk.hybrid_risk_score || 0).toFixed(4)})`;
+        if (riskTier === 'HIGH') badge.className = 'px-2.5 py-0.5 text-xs font-bold rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30';
+        else if (riskTier === 'MEDIUM') badge.className = 'px-2.5 py-0.5 text-xs font-bold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30';
+        else badge.className = 'px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+
+        document.getElementById('modal-meta-grid').innerHTML = `
+          <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800"><span class="text-slate-500 block">ID:</span><span class="font-mono font-bold text-white">${tx.transaction_id}</span></div>
+          <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800"><span class="text-slate-500 block">Account:</span><span class="font-bold text-white">${tx.account_id}</span></div>
+          <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800"><span class="text-slate-500 block">Amount:</span><span class="font-bold text-emerald-400">₹${Number(tx.amount || 0).toLocaleString()}</span></div>
+          <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800"><span class="text-slate-500 block">Channel:</span><span class="font-bold text-white">${tx.channel}</span></div>
+          <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800"><span class="text-slate-500 block">Category:</span><span class="font-bold text-white">${tx.merchant_category}</span></div>
+          <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800"><span class="text-slate-500 block">City:</span><span class="font-bold text-white">${tx.city}</span></div>
+        `;
+
+        const modalShap = document.getElementById('modal-shap-container');
+        if (shap.length === 0) {
+          modalShap.innerHTML = '<div class="text-slate-500 italic py-1">No SHAP explanations recorded for this transaction.</div>';
+        } else {
+          modalShap.innerHTML = shap.map(item => `
+            <div class="p-2 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
+              <span class="font-mono text-slate-300">${item.feature} (val: ${Number(item.feature_value || 0).toFixed(2)})</span>
+              <span class="font-mono font-bold ${Number(item.shap_value) >= 0 ? 'text-rose-400' : 'text-emerald-400'}">
+                ${Number(item.shap_value) >= 0 ? '+' : ''}${Number(item.shap_value || 0).toFixed(4)}
+              </span>
+            </div>
+          `).join('');
+        }
+
+        document.getElementById('modal-raw-json').textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        console.error('Modal load error:', err);
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('tx-modal').classList.add('hidden');
+    }
+
+    function copyModalJson() {
+      const text = document.getElementById('modal-raw-json').textContent;
+      navigator.clipboard.writeText(text);
+      alert('Transaction JSON payload copied to clipboard!');
+    }
+
+    // Toggle Polling
+    function toggleAutoPolling() {
+      autoPolling = !autoPolling;
+      const text = document.getElementById('poll-text');
+      const ind = document.getElementById('poll-indicator');
+      if (autoPolling) {
+        text.textContent = 'Live: ON (3s)';
+        ind.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-ping';
+        startPolling();
+      } else {
+        text.textContent = 'Live: PAUSED';
+        ind.className = 'w-2 h-2 rounded-full bg-slate-500';
+        clearInterval(pollInterval);
+      }
+    }
+
+    function startPolling() {
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(refreshDashboard, 3000);
+    }
+
+    // Bootstrap
+    window.addEventListener('DOMContentLoaded', () => {
+      initCharts();
+      refreshDashboard();
+      startPolling();
+    });
+  </script>
+</body>
+</html>

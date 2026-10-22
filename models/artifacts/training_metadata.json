@@ -1,0 +1,94 @@
+{
+  "timestamp": "2026-10-01T13:33:58.920556+00:00",
+  "elapsed_training_seconds": 1.89,
+  "dataset": {
+    "total_samples": 10000,
+    "num_features": 23,
+    "normal_samples": 8385,
+    "normal_pct": 83.85,
+    "anomaly_samples": 1615,
+    "anomaly_pct": 16.15,
+    "train_samples": 8000,
+    "test_samples": 2000,
+    "random_seed": 42
+  },
+  "feature_columns": [
+    "amount",
+    "log_amount",
+    "transaction_count_1m",
+    "transaction_count_5m",
+    "transaction_count_1h",
+    "total_amount_5m",
+    "total_amount_1h",
+    "average_amount_5m",
+    "average_amount_1h",
+    "maximum_amount_1h",
+    "minimum_amount_1h",
+    "amount_deviation_from_recent_avg",
+    "amount_ratio_to_recent_avg",
+    "merchant_transaction_count_1h",
+    "device_transaction_count_1h",
+    "city_transaction_count_1h",
+    "channel_transaction_count_1h",
+    "unique_device_count_1h",
+    "unique_merchant_count_1h",
+    "unique_city_count_1h",
+    "unique_channel_count_1h",
+    "known_device_flag",
+    "new_city_flag"
+  ],
+  "xgboost": {
+    "model_name": "XGBoost",
+    "parameters": {
+      "n_estimators": 100,
+      "max_depth": 5,
+      "learning_rate": 0.08,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "random_state": 42,
+      "eval_metric": "logloss",
+      "n_jobs": -1
+    },
+    "classification_threshold": 0.5,
+    "train_samples": 8000,
+    "test_samples": 2000,
+    "test_anomalies": 323,
+    "accuracy": 0.956,
+    "precision": 0.9757,
+    "recall": 0.7461,
+    "f1_score": 0.8456,
+    "roc_auc": 0.9676,
+    "pr_auc": 0.921,
+    "confusion_matrix": {
+      "tn": 1671,
+      "fp": 6,
+      "fn": 82,
+      "tp": 241
+    }
+  },
+  "isolation_forest": {
+    "model_name": "IsolationForest",
+    "parameters": {
+      "n_estimators": 100,
+      "contamination": 0.1,
+      "max_samples": "auto",
+      "random_state": 42,
+      "n_jobs": -1
+    },
+    "train_samples": 8000,
+    "test_samples": 2000,
+    "test_anomalies": 323,
+    "accuracy": 0.808,
+    "precision": 0.3512,
+    "recall": 0.2229,
+    "f1_score": 0.2727,
+    "roc_auc": 0.7348,
+    "pr_auc": 0.3207,
+    "confusion_matrix": {
+      "tn": 1544,
+      "fp": 133,
+      "fn": 251,
+      "tp": 72
+    }
+  }
+}

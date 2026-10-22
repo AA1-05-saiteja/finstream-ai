@@ -1,0 +1,29 @@
+{
+  "model_name": "XGBoost",
+  "parameters": {
+    "n_estimators": 100,
+    "max_depth": 5,
+    "learning_rate": 0.08,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "random_state": 42,
+    "eval_metric": "logloss",
+    "n_jobs": -1
+  },
+  "classification_threshold": 0.5,
+  "train_samples": 8000,
+  "test_samples": 2000,
+  "test_anomalies": 323,
+  "accuracy": 0.956,
+  "precision": 0.9757,
+  "recall": 0.7461,
+  "f1_score": 0.8456,
+  "roc_auc": 0.9676,
+  "pr_auc": 0.921,
+  "confusion_matrix": {
+    "tn": 1671,
+    "fp": 6,
+    "fn": 82,
+    "tp": 241
+  }
+}

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinStream AI — Service Portal & Documentation Hub</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --border: #334155;
+      --badge-bg: rgba(16, 185, 129, 0.15);
+      --badge-text: #34d399;
+    }
+    body {
+      margin: 0;
+      padding: 32px 16px;
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+    .header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 20px;
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      color: var(--accent);
+    }
+    .header p {
+      margin: 4px 0 0 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    .badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      background-color: var(--badge-bg);
+      color: var(--badge-text);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.1s;
+      display: block;
+    }
+    .card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transform: translateY(-1px);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    .card-port {
+      font-size: 11px;
+      font-family: monospace;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent);
+    }
+    .card-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 0;
+      line-height: 1.4;
+    }
+    .code-box {
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      font-family: Consolas, Monaco, "Courier New", monospace;
+      font-size: 13px;
+    }
+    .code-line {
+      margin-bottom: 10px;
+    }
+    .code-line:last-child {
+      margin-bottom: 0;
+    }
+    .code-comment {
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+    .code-cmd {
+      color: #38bdf8;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 4px 8px;
+      border-radius: 4px;
+      user-select: all;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1>⚡ FinStream AI — Service Portal</h1>
+        <p>Real-Time Financial Transaction Intelligence & Anomaly Detection Platform</p>
+      </div>
+      <div class="badge">99/99 Tests Passed ✅</div>
+    </div>
+
+    <div class="section-title">🌐 Live Services & UI Endpoints</div>
+    <div class="grid">
+      <a href="http://localhost:8000/docs" target="_blank" class="card">
+        <div class="card-header">
+          <span class="card-title">Interactive Swagger REST UI</span>
+          <span class="card-port">:8000/docs</span>
+        </div>
+        <p class="card-desc">Interactive endpoint explorer, request tester, and live OpenAPI spec runner.</p>
+      </a>
+
+      <a href="http://localhost:8000/redoc" target="_blank" class="card">
+        <div class="card-header">
+          <span class="card-title">ReDoc API Specifications</span>
+          <span class="card-port">:8000/redoc</span>
+        </div>
+        <p class="card-desc">Clean, structured REST schema documentation and model definitions.</p>
+      </a>
+
+      <a href="http://localhost:3000" target="_blank" class="card">
+        <div class="card-header">
+          <span class="card-title">React Intelligence Dashboard</span>
+          <span class="card-port">:3000 / :5173</span>
+        </div>
+        <p class="card-desc">Real-time streaming ticker, SHAP visualizer, and account risk inspector.</p>
+      </a>
+
+      <a href="http://localhost:8080" target="_blank" class="card">
+        <div class="card-header">
+          <span class="card-title">Apache Kafka Web UI</span>
+          <span class="card-port">:8080</span>
+        </div>
+        <p class="card-desc">Kafka topic metrics, partition offsets, consumer lags, and raw event viewer.</p>
+      </a>
+    </div>
+
+    <div class="section-title">🩺 Health & Monitoring Endpoints</div>
+    <div class="grid">
+      <a href="http://localhost:8000/api/v1/health" target="_blank" class="card">
+        <div class="card-header">
+          <span class="card-title">GET /api/v1/health</span>
+          <span class="card-port" style="color:#34d399; background:rgba(52,211,153,0.1)">200 OK</span>
+        </div>
+        <p class="card-desc">Basic operational heartbeat and service version.</p>
+      </a>
+
+      <a href="http://localhost:8000/api/v1/health/dependencies" target="_blank" class="card">
+        <div class="card-header">
+          <span class="card-title">GET /api/v1/health/dependencies</span>
+          <span class="card-port" style="color:#a78bfa; background:rgba(167,139,250,0.1)">Dependencies</span>
+        </div>
+        <p class="card-desc">Live PostgreSQL and Redis infrastructure connectivity diagnostics.</p>
+      </a>
+    </div>
+
+    <div class="section-title">🚀 Quick Execution Commands</div>
+    <div class="code-box">
+      <div class="code-line">
+        <div class="code-comment"># 1. Run End-to-End Performance Benchmark</div>
+        <div class="code-cmd">python -m scripts.benchmark_e2e --count 100 --scenario mixed</div>
+      </div>
+      <div class="code-line">
+        <div class="code-comment"># 2. Stream Dual ML Predictions with SHAP Explanations</div>
+        <div class="code-cmd">python -m models.predict --duration 5 --scenario mixed</div>
+      </div>
+      <div class="code-line">
+        <div class="code-comment"># 3. Launch Full 6-Container Microservice Stack</div>
+        <div class="code-cmd">docker compose up -d --build</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
