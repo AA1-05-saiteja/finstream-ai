@@ -219,7 +219,11 @@ class BankStatementAnalyzer:
 
             # Metadata extraction
             tx_id = str(row.get(col_map["id"]) or f"STX{idx+1:05d}").strip()
-            description = str(row.get(col_map["description"]) or f"Transaction {tx_id}").strip()
+            raw_description = str(row.get(col_map["description"]) or f"Transaction {tx_id}").strip()
+
+            # Sensitive data masking: Mask any 12-16 digit account/card numbers (Phase 8 Privacy standard)
+            description = re.sub(r"\b(?:\d[ -]*?){12,16}\b", lambda m: f"XXXX XXXX {re.sub(r'[\s\-]', '', m.group(0))[-4:]}", raw_description)
+            masked_account = f"XXXX XXXX {1000 + (idx % 8999)}"
 
             category = str(row.get(col_map["category"]) or "").strip().upper()
             if not category or category == "NAN":
@@ -241,6 +245,7 @@ class BankStatementAnalyzer:
 
             parsed_records.append({
                 "transaction_id": tx_id,
+                "account_id": masked_account,
                 "timestamp": date_dt.strftime("%Y-%m-%dT%H:%M:%SZ"),
                 "date_dt": date_dt,
                 "amount": amount,
@@ -256,6 +261,7 @@ class BankStatementAnalyzer:
                 "card_present": channel in ["POS", "ATM"],
                 "balance": balance,
                 "scenario_label": "STATEMENT_HISTORICAL",
+                "source": "UPLOADED_BANK_STATEMENT",
             })
 
         # 5. Chronological Sort
@@ -269,11 +275,14 @@ class BankStatementAnalyzer:
         for r in parsed_records:
             r.pop("date_dt", None)
 
+        missing_count = int(df.isna().sum().sum())
         audit = {
             "original_rows": orig_row_count,
             "valid_transactions": len(parsed_records),
             "removed_duplicates": removed_duplicates,
+            "duplicate_rows_removed": removed_duplicates,
             "invalid_rows": invalid_rows,
+            "missing_values": missing_count,
             "date_range": {"start": start_date, "end": end_date},
             "warnings": warnings,
         }
@@ -540,7 +549,42 @@ class BankStatementAnalyzer:
         if file_format.lower() == "xlsx":
             buffer = io.BytesIO()
             with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+                # 1. Main Risk Analysis Sheet
                 df.to_excel(writer, index=False, sheet_name="Risk Analysis")
+
+                # 2. Executive Risk Summary Sheet
+                s = statement_analysis.get("summary", {})
+                summary_items = [
+                    {"Metric": "Total Transactions", "Value": s.get("total_transactions", 0)},
+                    {"Metric": "Total Debit (Outflow INR)", "Value": s.get("total_debit", 0.0)},
+                    {"Metric": "Total Credit (Inflow INR)", "Value": s.get("total_credit", 0.0)},
+                    {"Metric": "Highest Transaction Amount (INR)", "Value": s.get("highest_transaction", 0.0)},
+                    {"Metric": "Lowest Transaction Amount (INR)", "Value": s.get("lowest_transaction", 0.0)},
+                    {"Metric": "Average Transaction Amount (INR)", "Value": s.get("average_transaction", 0.0)},
+                    {"Metric": "Low-Risk Normal Count", "Value": s.get("low_risk_count", 0)},
+                    {"Metric": "Medium-Risk Attention Count", "Value": s.get("medium_risk_count", 0)},
+                    {"Metric": "High-Risk Critical Anomaly Count", "Value": s.get("high_risk_count", 0)},
+                    {"Metric": "Average Risk Score", "Value": s.get("avg_risk_score", 0.0)},
+                ]
+                pd.DataFrame(summary_items).to_excel(writer, index=False, sheet_name="Risk Summary")
+
+                # 3. Data Cleaning & Quality Audit Sheet
+                audit = statement_analysis.get("audit", {})
+                quality_items = [
+                    {"Audit Metric": "Original Rows Ingested", "Value": audit.get("original_rows", 0)},
+                    {"Audit Metric": "Valid Transactions Processed", "Value": audit.get("valid_transactions", 0)},
+                    {"Audit Metric": "Identical Duplicate Rows Dropped", "Value": audit.get("removed_duplicates", 0)},
+                    {"Audit Metric": "Invalid / Non-Numeric Rows Dropped", "Value": audit.get("invalid_rows", 0)},
+                    {"Audit Metric": "Missing Values Handled", "Value": audit.get("missing_values", 0)},
+                    {"Audit Metric": "Statement Start Date", "Value": audit.get("date_range", {}).get("start", "N/A")},
+                    {"Audit Metric": "Statement End Date", "Value": audit.get("date_range", {}).get("end", "N/A")},
+                ]
+                pd.DataFrame(quality_items).to_excel(writer, index=False, sheet_name="Data Quality")
+
+                # 4. Top Critical Risk Transactions
+                top_risk_df = df.sort_values(by="Risk Score", ascending=False).head(20)
+                top_risk_df.to_excel(writer, index=False, sheet_name="Top Risk Transactions")
+
             buffer.seek(0)
             return buffer.getvalue(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", f"finstream_statement_analysis_{ts_slug}.xlsx"
         else:

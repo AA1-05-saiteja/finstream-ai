@@ -292,3 +292,80 @@ def test_frontend_routes_served(client_fixture: TestClient):
     r_tx = client.get("/transaction/TX_TEST_001")
     assert r_tx.status_code == 200
     assert "Transaction Intelligence Profile" in r_tx.text
+
+
+# =============================================================================
+# Edge Case & Robustness Tests
+# =============================================================================
+
+def test_api_statement_upload_invalid_format(client_fixture: TestClient):
+    """Ensures uploading unsupported file extensions returns a user-friendly 400 error."""
+    client = client_fixture
+    files = {"file": ("unsupported.pdf", b"%PDF-1.4...", "application/pdf")}
+    resp = client.post("/api/v1/statement/upload", files=files)
+    assert resp.status_code == 400
+    assert "Unsupported file format" in resp.json()["detail"]
+
+
+def test_api_statement_upload_empty_file(client_fixture: TestClient):
+    """Ensures completely empty files return a graceful error message without crashing."""
+    client = client_fixture
+    files = {"file": ("empty.csv", b"", "text/csv")}
+    resp = client.post("/api/v1/statement/upload", files=files)
+    assert resp.status_code == 400
+
+
+def test_api_statement_upload_xlsx_format(client_fixture: TestClient):
+    """Tests uploading native Excel (.xlsx) bank statements with real dual-ML evaluation."""
+    client = client_fixture
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Sheet1"
+    ws.append(["Txn Date", "Reference No", "Narration", "Withdrawal (Dr)", "Deposit (Cr)", "Account Balance"])
+    ws.append(["2026-03-01", "REF001", "Salary Credit", None, 75000.0, 75000.0])
+    ws.append(["2026-03-02", "REF002", "Supermarket Groceries", 2400.0, None, 72600.0])
+    ws.append(["2026-03-03", "REF003", "Electronics Store", 18500.0, None, 54100.0])
+
+    buf = io.BytesIO()
+    wb.save(buf)
+    buf.seek(0)
+
+    files = {"file": ("hdfc_statement.xlsx", buf.getvalue(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
+    resp = client.post("/api/v1/statement/upload", files=files)
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["filename"] == "hdfc_statement.xlsx"
+    assert data["summary"]["total_transactions"] == 3
+    assert data["summary"]["total_credit"] == 75000.0
+    assert data["summary"]["total_debit"] == 20900.0
+
+
+def test_multisheet_excel_export_structure():
+    """Validates that exported Excel workbooks contain all 4 required analytical sheets."""
+    analyzer = BankStatementAnalyzer()
+    sample_csv = generate_sample_statement_csv(days=7)
+    result = analyzer.analyze_statement(sample_csv, filename="export_multisheet.csv")
+
+    xlsx_bytes = export_analysis_report(result, file_format="xlsx")
+    wb = openpyxl.load_workbook(io.BytesIO(xlsx_bytes))
+    sheet_names = wb.sheetnames
+    assert "Risk Analysis" in sheet_names
+    assert "Risk Summary" in sheet_names
+    assert "Data Quality" in sheet_names
+    assert "Top Risk Transactions" in sheet_names
+
+
+def test_privacy_sensitive_data_masking():
+    """Validates that sensitive 16-digit card and account numbers in narrations are securely masked."""
+    csv_raw = '''Date,Description,Amount,Balance
+2026-03-01,Transfer to card 4111222233334821,1500.00,25000.00
+2026-03-02,Payment for acc 9876543210987654,2300.00,22700.00
+'''
+    cleaned_rows, _ = clean_and_normalize_statement(csv_raw.encode("utf-8"), "privacy_test.csv")
+    assert len(cleaned_rows) == 2
+    for r in cleaned_rows:
+        assert "411122223333" not in r["description"]
+        assert "987654321098" not in r["description"]
+        assert "XXXX XXXX" in r["description"]
+

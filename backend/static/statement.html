@@ -107,11 +107,12 @@
           <span class="font-bold text-slate-300 uppercase tracking-wider text-[11px]">Data Cleaning & Quality Audit</span>
           <span class="text-slate-500" id="audit-date-range">Date Range: —</span>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-slate-300 font-mono">
+        <div class="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1 text-slate-300 font-mono">
           <div class="p-2 rounded bg-slate-900 border border-slate-800">Original Rows: <span id="audit-orig" class="text-white font-bold">0</span></div>
           <div class="p-2 rounded bg-slate-900 border border-slate-800">Valid Transactions: <span id="audit-valid" class="text-emerald-400 font-bold">0</span></div>
-          <div class="p-2 rounded bg-slate-900 border border-slate-800">Removed Duplicates: <span id="audit-dupes" class="text-amber-400 font-bold">0</span></div>
+          <div class="p-2 rounded bg-slate-900 border border-slate-800">Duplicate Rows Removed: <span id="audit-dupes" class="text-amber-400 font-bold">0</span></div>
           <div class="p-2 rounded bg-slate-900 border border-slate-800">Invalid / Dropped: <span id="audit-invalid" class="text-rose-400 font-bold">0</span></div>
+          <div class="p-2 rounded bg-slate-900 border border-slate-800">Missing Values Handled: <span id="audit-missing" class="text-indigo-400 font-bold">0</span></div>
         </div>
         <div id="audit-warnings" class="text-[11px] text-amber-400/90 pt-1"></div>
       </div>
@@ -497,8 +498,10 @@
       auditCard.classList.remove('hidden');
       document.getElementById('audit-orig').textContent = audit.original_rows || 0;
       document.getElementById('audit-valid').textContent = audit.valid_transactions || 0;
-      document.getElementById('audit-dupes').textContent = audit.removed_duplicates || 0;
+      document.getElementById('audit-dupes').textContent = audit.removed_duplicates || audit.duplicate_rows_removed || 0;
       document.getElementById('audit-invalid').textContent = audit.invalid_rows || 0;
+      const missingElem = document.getElementById('audit-missing');
+      if (missingElem) missingElem.textContent = audit.missing_values || 0;
       document.getElementById('audit-date-range').textContent = `Date Range: ${audit.date_range?.start || '—'} to ${audit.date_range?.end || '—'}`;
 
       const warningsContainer = document.getElementById('audit-warnings');

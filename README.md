@@ -3,7 +3,7 @@
 [![Python Version](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Architecture: Event-Driven](https://img.shields.io/badge/Architecture-Event--Driven-green.svg)]()
-[![Build & Test Status](https://img.shields.io/badge/tests-108%20passed%20%7C%200%20failed-brightgreen.svg)]()
+[![Build & Test Status](https://img.shields.io/badge/tests-113%20passed%20%7C%200%20failed-brightgreen.svg)]()
 [![Platform Status](https://img.shields.io/badge/status-Bank%20Statement%20%2B%20Live%20Stream%20Complete-success.svg)]()
 
 > **Academic Disclaimer**: This is an academic research and final-year Data Science major engineering project. All data, customer accounts, transaction IDs, and merchant records are 100% synthetically generated. The system is a real-time decision-support platform that scores and flags transactions for human analytical review; it does not connect to real financial institutions nor make irreversible automated financial settlements.
@@ -134,8 +134,8 @@ All **13 planned phases** have been completely implemented, verified with automa
 | **Phase 11**| React + TypeScript Dashboard | ✅ Complete | Responsive dashboard, real-time ticker, SHAP visualizer, account search | Integrated |
 | **Phase 12**| WebSocket Real-Time Delivery | ✅ Complete | Sub-millisecond event push, heartbeat keepalive, reconnection backoff | 3 tests |
 | **Phase 13**| Full E2E Integration & Benchmarking | ✅ Complete | 6-container Docker Compose, pipeline runner, throughput & latency metrics | 8 tests |
-| **Phase 14**| Bank Statement Intelligence & Live Stream Extension | ✅ Complete | Multi-format CSV/XLSX cleaning, 23-feature ML scoring, SHAP explainability, 3 web dashboards (`/statement`, `/insights`, `/transaction/{id}`), live alerts & contextual baseline comparison | 9 tests |
-| **Total** | **Full Platform Verification** | ✅ **COMPLETE** | **All 14 phases verified; 0 failures, 0 errors, 0 regressions** | **108 Passed** |
+| **Phase 14**| Bank Statement Intelligence & Live Stream Extension | ✅ Complete | Multi-format CSV/XLSX cleaning, 23-feature ML scoring, SHAP explainability, 3 web dashboards (`/statement`, `/insights`, `/transaction/{id}`), live alerts & contextual baseline comparison | 14 tests |
+| **Total** | **Full Platform Verification** | ✅ **COMPLETE** | **All 14 phases verified; 0 failures, 0 errors, 0 regressions** | **113 Passed** |
 
 ---
 
@@ -363,7 +363,7 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 10.2 Run Full Test Suite (108 Tests)
+### 10.2 Run Full Test Suite (113 Tests)
 ```powershell
 pytest tests/ -v
 ```

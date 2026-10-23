@@ -270,6 +270,7 @@ class ApiService:
         for r in recent_risks:
             score_sum += float(r.hybrid_risk_score)
             tx = r.transaction
+            tx_source = getattr(tx, "source", None) or ("LIVE_STREAM" if "LIVE" in r.transaction_id else "SIMULATED")
             tx_info = {
                 "transaction_id": r.transaction_id,
                 "amount": float(tx.amount) if tx else 0.0,
@@ -283,6 +284,7 @@ class ApiService:
                 "xgboost_probability": round(float(r.xgboost_probability), 4),
                 "isolation_forest_normalized": round(float(r.isolation_forest_normalized), 4),
                 "top_shap_features": [exp.to_dict() for exp in r.shap_explanations] if r.shap_explanations else [],
+                "source": tx_source,
             }
             recent_list.append(tx_info)
 
