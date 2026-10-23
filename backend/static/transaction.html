@@ -20,11 +20,11 @@
     }
   </script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col items-center overflow-x-hidden">
 
   <!-- Top Navigation Bar -->
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40 px-4 lg:px-8 py-3.5">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+  <header class="w-full border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center space-x-3">
         <a href="/" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
           <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -51,7 +51,7 @@
   </header>
 
   <!-- Main Container -->
-  <main class="max-w-7xl mx-auto px-4 lg:px-8 py-6 space-y-6">
+  <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
     <!-- Back button & Header -->
     <div class="flex items-center justify-between">
@@ -85,7 +85,7 @@
             <span id="tx-direction" class="text-xl font-bold text-white">DEBIT</span>
           </div>
           <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
-            <span class="text-slate-500 block text-[10px] font-sans">Timestamp (UTC):</span>
+            <span class="text-slate-500 block text-[10px] font-sans">Timestamp:</span>
             <span id="tx-timestamp" class="text-xs text-slate-300">—</span>
           </div>
           <div class="p-3 rounded-xl bg-slate-950 border border-slate-800">
@@ -221,6 +221,33 @@
     let shapChart = null;
     let rawPayload = null;
 
+    // Format timestamps consistently to "DD MMM YYYY, hh:mm AM/PM" (or "DD MMM YYYY" for date-only)
+    function formatDisplayTimestamp(isoStr) {
+      if (!isoStr) return '—';
+      try {
+        if (typeof isoStr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(isoStr.trim())) {
+          const [y, m, d] = isoStr.trim().split('-');
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          return `${d} ${months[parseInt(m, 10) - 1]} ${y}`;
+        }
+        const d = new Date(isoStr);
+        if (isNaN(d.getTime())) return String(isoStr);
+        const day = String(d.getDate()).padStart(2, '0');
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const month = months[d.getMonth()];
+        const year = d.getFullYear();
+        let hours = d.getHours();
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        const strHours = String(hours).padStart(2, '0');
+        return `${day} ${month} ${year}, ${strHours}:${minutes} ${ampm}`;
+      } catch (e) {
+        return String(isoStr);
+      }
+    }
+
     async function loadTransaction() {
       // Extract txId from pathname: /transaction/{txId}
       const parts = window.location.pathname.split('/');
@@ -295,7 +322,7 @@
       // Metadata
       document.getElementById('tx-amount').textContent = `₹${Number(data.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
       document.getElementById('tx-direction').textContent = data.direction || (data.transaction_type === 'DEPOSIT' ? 'CREDIT' : 'DEBIT');
-      document.getElementById('tx-timestamp').textContent = (data.timestamp || '').replace('T', ' ').replace('Z', '');
+      document.getElementById('tx-timestamp').textContent = formatDisplayTimestamp(data.timestamp);
       document.getElementById('tx-account').textContent = data.account_id || 'ACC0001';
       document.getElementById('tx-merchant').textContent = data.merchant_id || data.description || 'Merchant';
       document.getElementById('tx-category').textContent = data.merchant_category || 'GENERAL';

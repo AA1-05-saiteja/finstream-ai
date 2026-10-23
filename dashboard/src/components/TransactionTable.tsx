@@ -24,11 +24,28 @@ export const TransactionTable: React.FC<TransactionTableProps> = ({ transactions
   };
 
   const formatDate = (iso: string) => {
+    if (!iso) return '—';
     try {
+      if (typeof iso === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(iso.trim())) {
+        const [y, m, d] = iso.trim().split('-');
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${d} ${months[parseInt(m, 10) - 1]} ${y}`;
+      }
       const d = new Date(iso);
-      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' ' + d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      if (isNaN(d.getTime())) return String(iso);
+      const day = String(d.getDate()).padStart(2, '0');
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const month = months[d.getMonth()];
+      const year = d.getFullYear();
+      let hours = d.getHours();
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      const strHours = String(hours).padStart(2, '0');
+      return `${day} ${month} ${year}, ${strHours}:${minutes} ${ampm}`;
     } catch {
-      return iso;
+      return String(iso);
     }
   };
 

@@ -26,13 +26,13 @@
     ::-webkit-scrollbar-thumb:hover { background: #475569; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col items-center overflow-x-hidden">
 
   <!-- ========================================================================= -->
   <!-- Top Navigation Bar                                                        -->
   <!-- ========================================================================= -->
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40 px-4 lg:px-8 py-3.5">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+  <header class="w-full border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
       <div class="flex items-center space-x-3">
         <a href="/" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
           <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,7 +61,7 @@
   <!-- ========================================================================= -->
   <!-- Main Content Container                                                    -->
   <!-- ========================================================================= -->
-  <main class="max-w-7xl mx-auto px-4 lg:px-8 py-6 space-y-6">
+  <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
     <!-- Upload & Ingestion Section -->
     <section class="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm space-y-4">
@@ -394,6 +394,33 @@
     let doughnutChart = null;
     let dailyChart = null;
 
+    // Format timestamps consistently to "DD MMM YYYY, hh:mm AM/PM" (or "DD MMM YYYY" for date-only)
+    function formatDisplayTimestamp(isoStr) {
+      if (!isoStr) return '—';
+      try {
+        if (typeof isoStr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(isoStr.trim())) {
+          const [y, m, d] = isoStr.trim().split('-');
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          return `${d} ${months[parseInt(m, 10) - 1]} ${y}`;
+        }
+        const d = new Date(isoStr);
+        if (isNaN(d.getTime())) return String(isoStr);
+        const day = String(d.getDate()).padStart(2, '0');
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const month = months[d.getMonth()];
+        const year = d.getFullYear();
+        let hours = d.getHours();
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        const strHours = String(hours).padStart(2, '0');
+        return `${day} ${month} ${year}, ${strHours}:${minutes} ${ampm}`;
+      } catch (e) {
+        return String(isoStr);
+      }
+    }
+
     // Drag and Drop Handling
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
@@ -502,7 +529,9 @@
       document.getElementById('audit-invalid').textContent = audit.invalid_rows || 0;
       const missingElem = document.getElementById('audit-missing');
       if (missingElem) missingElem.textContent = audit.missing_values || 0;
-      document.getElementById('audit-date-range').textContent = `Date Range: ${audit.date_range?.start || '—'} to ${audit.date_range?.end || '—'}`;
+      const startFmt = formatDisplayTimestamp(audit.date_range?.start);
+      const endFmt = formatDisplayTimestamp(audit.date_range?.end);
+      document.getElementById('audit-date-range').textContent = `Date Range: ${startFmt} to ${endFmt}`;
 
       const warningsContainer = document.getElementById('audit-warnings');
       if (audit.warnings && audit.warnings.length > 0) {
@@ -557,7 +586,7 @@
 
       tbody.innerHTML = txs.map(t => {
         const amtFmt = `₹${Number(t.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-        const dateFmt = t.timestamp ? t.timestamp.replace('T', ' ').replace('Z', '') : '—';
+        const dateFmt = formatDisplayTimestamp(t.timestamp);
         const score = Number(t.hybrid_risk_score || 0).toFixed(4);
 
         let reasons = 'Normal baseline';
@@ -572,7 +601,7 @@
         return `
           <tr class="hover:bg-slate-800/40 transition">
             <td class="py-2 px-3 text-indigo-300 font-bold">${t.transaction_id}</td>
-            <td class="py-2 px-3 text-slate-400">${dateFmt}</td>
+            <td class="py-2 px-3 text-slate-400 font-mono text-[11px] whitespace-nowrap">${dateFmt}</td>
             <td class="py-2 px-3 font-bold text-white">${amtFmt}</td>
             <td class="py-2 px-3 font-sans text-slate-300 truncate max-w-[180px]" title="${t.description}">${t.description}</td>
             <td class="py-2 px-3 font-sans text-slate-400">${t.merchant_category}</td>
@@ -636,7 +665,7 @@
         return `
           <tr class="hover:bg-slate-800/40 transition">
             <td class="py-2 px-3 text-indigo-300 font-bold">${t.transaction_id}</td>
-            <td class="py-2 px-3 text-slate-400">${(t.timestamp || '').replace('T', ' ').replace('Z', '')}</td>
+            <td class="py-2 px-3 text-slate-400 font-mono text-[11px] whitespace-nowrap">${formatDisplayTimestamp(t.timestamp)}</td>
             <td class="py-2 px-3 font-bold text-white">${amtFmt}</td>
             <td class="py-2 px-3 font-sans text-slate-300 truncate max-w-[180px]" title="${t.description}">${t.description}</td>
             <td class="py-2 px-3 font-sans text-slate-400">${t.merchant_category}</td>

@@ -57,13 +57,13 @@
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-indigo-500 selection:text-white flex flex-col items-center overflow-x-hidden">
 
   <!-- ========================================================================= -->
   <!-- Top Navigation Header                                                     -->
   <!-- ========================================================================= -->
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40 px-4 lg:px-8 py-3.5">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+  <header class="w-full border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
       <!-- Brand & Title -->
       <div class="flex items-center space-x-3">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
@@ -124,7 +124,7 @@
   <!-- ========================================================================= -->
   <!-- Main Dashboard Content                                                    -->
   <!-- ========================================================================= -->
-  <main class="max-w-7xl mx-auto px-4 lg:px-8 py-6 space-y-6">
+  <main class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
     <!-- ========================================================================= -->
     <!-- Live High-Risk Anomaly Alert Banner                                       -->
@@ -697,6 +697,33 @@
       });
     }
 
+    // Consistent timestamp presentation: "DD MMM YYYY, hh:mm AM/PM" (or "DD MMM YYYY" for date-only)
+    function formatDisplayTimestamp(isoStr) {
+      if (!isoStr) return '—';
+      try {
+        if (typeof isoStr === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(isoStr.trim())) {
+          const [y, m, d] = isoStr.trim().split('-');
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          return `${d} ${months[parseInt(m, 10) - 1]} ${y}`;
+        }
+        const d = new Date(isoStr);
+        if (isNaN(d.getTime())) return String(isoStr);
+        const day = String(d.getDate()).padStart(2, '0');
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const month = months[d.getMonth()];
+        const year = d.getFullYear();
+        let hours = d.getHours();
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+        const strHours = String(hours).padStart(2, '0');
+        return `${day} ${month} ${year}, ${strHours}:${minutes} ${ampm}`;
+      } catch (e) {
+        return String(isoStr);
+      }
+    }
+
     // Refresh Dashboard Function
     async function refreshDashboard() {
       try {
@@ -785,7 +812,7 @@
           : 'bg-purple-500/10 text-purple-400 border border-purple-500/20';
 
         const amountFormatted = `₹${Number(tx.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-        const tsFormatted = tx.timestamp ? new Date(tx.timestamp).toLocaleTimeString() : '—';
+        const tsFormatted = formatDisplayTimestamp(tx.timestamp);
 
         return `
           <tr class="hover:bg-slate-800/40 transition">
@@ -802,7 +829,7 @@
             <td class="py-2.5 px-3 font-sans">
               <span class="px-2 py-0.5 text-[9px] font-bold rounded ${srcBadge}">${isLive ? 'LIVE STREAM' : 'SIMULATED'}</span>
             </td>
-            <td class="py-2.5 px-3 text-slate-500 font-sans text-[11px]">${tsFormatted}</td>
+            <td class="py-2.5 px-3 text-slate-400 font-mono text-[11px] whitespace-nowrap">${tsFormatted}</td>
             <td class="py-2.5 px-3 text-right font-sans space-x-1">
               <button onclick="openModal('${tx.transaction_id}')" class="px-2 py-1 text-[11px] rounded bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
                 Modal
@@ -985,13 +1012,14 @@
         else if (riskTier === 'MEDIUM') badge.className = 'px-2.5 py-0.5 text-xs font-bold rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30';
         else badge.className = 'px-2.5 py-0.5 text-xs font-bold rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
 
+        const modalTs = formatDisplayTimestamp(tx.timestamp);
         document.getElementById('modal-meta-grid').innerHTML = `
           <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800"><span class="text-slate-500 block">ID:</span><span class="font-mono font-bold text-white">${tx.transaction_id}</span></div>
           <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800"><span class="text-slate-500 block">Account:</span><span class="font-bold text-white">${tx.account_id}</span></div>
           <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800"><span class="text-slate-500 block">Amount:</span><span class="font-bold text-emerald-400">₹${Number(tx.amount || 0).toLocaleString()}</span></div>
+          <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800"><span class="text-slate-500 block">Timestamp:</span><span class="font-mono font-bold text-white text-[11px]">${modalTs}</span></div>
           <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800"><span class="text-slate-500 block">Channel:</span><span class="font-bold text-white">${tx.channel}</span></div>
           <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800"><span class="text-slate-500 block">Category:</span><span class="font-bold text-white">${tx.merchant_category}</span></div>
-          <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800"><span class="text-slate-500 block">City:</span><span class="font-bold text-white">${tx.city}</span></div>
         `;
 
         const modalShap = document.getElementById('modal-shap-container');
@@ -1180,7 +1208,7 @@
       const details = document.getElementById('live-alert-details');
       if (banner && details) {
         const formattedAmt = `₹${Number(alertObj.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-        const timeStr = alertObj.timestamp ? new Date(alertObj.timestamp).toLocaleTimeString() : 'Just now';
+        const timeStr = formatDisplayTimestamp(alertObj.timestamp);
         details.textContent = `Tx ID: ${alertObj.transaction_id}  |  Amount: ${formattedAmt}  |  Risk Score: ${Number(alertObj.risk_score || 0).toFixed(4)}  |  Timestamp: ${timeStr}`;
         banner.classList.remove('hidden');
       }
