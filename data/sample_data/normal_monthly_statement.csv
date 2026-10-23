@@ -1,0 +1,32 @@
+Date,Transaction ID,Description,Debit,Credit,Balance,Category,Merchant,Channel
+2026-10-01 09:30:00,TXN1001,Monthly Salary Credit - InnoTech Solutions,,150000.0,275000.0,Salary,InnoTech Solutions,NEFT
+2026-10-02 11:15:00,TXN1002,UPI/Swiggy/Order-88219/Lunch,540.0,,274460.0,Dining,Swiggy,UPI
+2026-10-03 10:00:00,TXN1003,NEFT/House Rent Oct 2026/Landlord HDFC,32000.0,,242460.0,Transfer,Landlord Rental,NEFT
+2026-10-04 18:45:00,TXN1004,POS/DMart Supermarket/Groceries,4650.0,,237810.0,Grocery,DMart,POS
+2026-10-05 08:30:00,TXN1005,UPI/Uber India/Daily Commute,320.0,,237490.0,Travel,Uber,UPI
+2026-10-06 20:10:00,TXN1006,UPI/Zomato/Dinner with Friends,980.0,,236510.0,Dining,Zomato,UPI
+2026-10-07 14:20:00,TXN1007,POS/Apollo Pharmacy/Health Supplements,1250.0,,235260.0,Healthcare,Apollo Pharmacy,POS
+2026-10-08 19:30:00,TXN1008,ECOM/Amazon India/Household Supplies,2850.0,,232410.0,Shopping,Amazon,NetBanking
+2026-10-09 12:00:00,TXN1009,UPI/Blinkit/Instant Grocery Delivery,420.0,,231990.0,Grocery,Blinkit,UPI
+2026-10-10 16:15:00,TXN1010,ATM/Cash Withdrawal/HDFC ATM Indiranagar,5000.0,,226990.0,Cash,HDFC Bank ATM,ATM
+2026-10-11 11:30:00,TXN1011,UPI/Starbucks Coffee/Weekend Meet,450.0,,226540.0,Dining,Starbucks,UPI
+2026-10-12 10:00:00,TXN1012,BillPay/BESCOM Electricity Bill Oct,2350.0,,224190.0,Utilities,BESCOM,NetBanking
+2026-10-13 10:15:00,TXN1013,BillPay/Airtel Broadband Monthly,1179.0,,223011.0,Utilities,Airtel,NetBanking
+2026-10-14 17:40:00,TXN1014,UPI/Zepto/Groceries & Snacks,380.0,,222631.0,Grocery,Zepto,UPI
+2026-10-15 13:20:00,TXN1015,POS/Shell Petrol Pump/Fuel Refill,2500.0,,220131.0,Travel,Shell Fuel,POS
+2026-10-16 21:00:00,TXN1016,ECOM/Netflix/Monthly Standard Plan,649.0,,219482.0,Entertainment,Netflix,NetBanking
+2026-10-17 15:30:00,TXN1017,POS/Myntra Fashion/Festival Apparel,4200.0,,215282.0,Shopping,Myntra,NetBanking
+2026-10-18 19:45:00,TXN1018,UPI/Dominos Pizza/Family Dinner,890.0,,214392.0,Dining,Dominos,UPI
+2026-10-19 09:10:00,TXN1019,UPI/Uber India/Office Commute,380.0,,214012.0,Travel,Uber,UPI
+2026-10-20 14:00:00,TXN1020,UPI/Friend Reimbursement/Lunch Split,,650.0,214662.0,Transfer,Arun Kumar,UPI
+2026-10-21 17:30:00,TXN1021,POS/Nature Basket/Organic Vegetables,1850.0,,212812.0,Grocery,Nature Basket,POS
+2026-10-22 12:15:00,TXN1022,UPI/BookMyShow/Movie Tickets PVR,760.0,,212052.0,Entertainment,BookMyShow,UPI
+2026-10-23 10:45:00,TXN1023,UPI/Swiggy Instamart/Essentials,520.0,,211532.0,Grocery,Swiggy,UPI
+2026-10-24 16:00:00,TXN1024,POS/Decathlon Sports/Gym Gear,2600.0,,208932.0,Shopping,Decathlon,POS
+2026-10-25 11:20:00,TXN1025,UPI/Chai Point/Office Tea Break,180.0,,208752.0,Dining,Chai Point,UPI
+2026-10-26 18:30:00,TXN1026,POS/Reliance Digital/Wireless Earbuds,3499.0,,205253.0,Electronics,Reliance Digital,POS
+2026-10-27 09:00:00,TXN1027,UPI/Metro SmartCard/Online Recharge,500.0,,204753.0,Travel,Namma Metro,UPI
+2026-10-28 20:00:00,TXN1028,UPI/Zomato/Dinner Delivery,710.0,,204043.0,Dining,Zomato,UPI
+2026-10-29 15:10:00,TXN1029,POS/Fabindia/Diwali Gift Items,3200.0,,200843.0,Shopping,Fabindia,POS
+2026-10-30 11:00:00,TXN1030,UPI/BigBasket/Monthly Grocery Part 2,3650.0,,197193.0,Grocery,BigBasket,UPI
+2026-10-31 19:30:00,TXN1031,POS/Barbeque Nation/Team Celebration,2800.0,,194393.0,Dining,Barbeque Nation,POS

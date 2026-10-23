@@ -25,7 +25,9 @@
 - [12. Bank Statement Intelligence & Analytics Engine](#12-bank-statement-intelligence--analytics-engine)
 - [13. Live Stream Extension & Anomaly Alert System](#13-live-stream-extension--anomaly-alert-system)
 - [14. Project Completion Status & Roadmap](#14-project-completion-status--roadmap)
-- [15. License](#15-license)
+- [15. Academic Presentation & Evaluation Materials](#15-academic-presentation--evaluation-materials)
+- [16. Future Scope (Phase 15+ Roadmap)](#16-future-scope-phase-15-roadmap)
+- [17. License](#17-license)
 
 ---
 
@@ -509,18 +511,43 @@ FinStream AI seamlessly distinguishes between three distinct data sources across
 | Architectural Component | Milestone | Status | Details |
 | :--- | :--- | :--- | :--- |
 | **Phases 1–13 Core Engine** | Pipeline & Streaming | **COMPLETED** | 99/99 automated baseline tests passing |
-| **Phase 14 Extension** | Bank Statement & Stream | **COMPLETED** | 9/9 new tests passing (108/108 total tests) |
+| **Phase 14 Extension** | Bank Statement & Stream | **COMPLETED** | 14/14 new tests passing (113/113 total tests) |
 | **Dual ML Inference** | XGBoost + Isolation Forest | **COMPLETED** | ROC-AUC: 0.9676, Artifacts in `models/artifacts/` |
 | **Model Explainability** | SHAP TreeExplainer | **COMPLETED** | Top-5 directional local feature attributions |
 | **Live Web Dashboards** | Zero-Install Web UI | **COMPLETED** | 4 responsive pages (`/`, `/statement`, `/insights`, `/transaction/{id}`) |
 | **Transaction Simulator** | 4 Demo Scenarios + Custom | **COMPLETED** | Real ML pipeline execution |
 | **Bank Statement Analyzer** | CSV & XLSX Local Engine | **COMPLETED** | Heuristic column mapping, cleaning audit, XLSX/CSV export |
 | **Live Stream Alerts** | Real-Time Anomaly Engine | **COMPLETED** | Dynamic alert banner, investigate action, contextual comparison |
+| **Sample Demo Data** | Synthetic CSV & XLSX | **COMPLETED** | Ready-to-upload files in `data/sample_data/` |
+| **Academic Defense Materials** | Slides, Viva Q&A & Demo | **COMPLETED** | Presentation deck, 24 viva questions, 3-min script |
 | **GitHub Preparation** | Git & `.gitignore` | **COMPLETED** | Clean ignore rules, ML artifacts tracked, 0 untracked leftovers |
 | **Continuous Integration** | GitHub Actions CI | **COMPLETED** | Automated Python 3.12 test runner (`ci.yml`) |
 
 ---
 
-## 15. License
+## 15. Academic Presentation & Evaluation Materials
+
+To assist in academic project defenses, capstone presentations, and technical viva reviews, the repository includes three comprehensive defense documents:
+
+1. **[Presentation Slide Deck (`docs/presentation.md`)](file:///c:/Users/kotas/Downloads/Personal%20Project/docs/presentation.md)**:
+   - 10 structured presentation slides covering Problem Statement, System Architecture, 23 Features, XGBoost + Isolation Forest, SHAP, and Verified Benchmarks.
+2. **[Comprehensive Viva Voce Examination Guide (`docs/viva_questions.md`)](file:///c:/Users/kotas/Downloads/Personal%20Project/docs/viva_questions.md)**:
+   - 24 detailed technical questions & answers covering streaming engineering, machine learning theory, privacy, latency vs. throughput, and system tradeoffs.
+3. **[3-Minute Live Academic Demonstration Script (`docs/demo_script.md`)](file:///c:/Users/kotas/Downloads/Personal%20Project/docs/demo_script.md)**:
+   - Step-by-step 8-stage demonstration walkthrough covering live streaming, high-risk alert triggers, SHAP drill-down, statement upload, and report export.
+
+---
+
+## 16. Future Scope (Phase 15+ Roadmap)
+
+The following optional enhancements represent planned future architectural extensions:
+1. **Native PDF Bank Statement Table Extraction & OCR**: Adding `pdfplumber` and OCR models for scanned/password-protected statements.
+2. **User Authentication & Role-Based Access Control (RBAC)**: Distinguishing `Auditor`, `Fraud Analyst`, and `Administrator` tiers with JWT.
+3. **Multi-Node Cloud Deployment**: Kubernetes (EKS/GKE) Helm charts with distributed Apache Kafka brokers and Redis clusters.
+4. **Active Learning Feedback Loop**: Capturing analyst fraud confirmations to trigger incremental retraining queues.
+
+---
+
+## 17. License
 
 This project is licensed under the [MIT License](LICENSE) — free for academic, educational, and commercial evaluation.
